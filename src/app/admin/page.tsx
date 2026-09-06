@@ -4,24 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default async function AdminPage() {
   const supabase = await createClient();
 
-  const [studenti, classi, richieste] = await Promise.all([
+  const [studenti, classi, richieste, pagamentiSospesi] = await Promise.all([
     supabase.from("studenti").select("id", { count: "exact", head: true }),
     supabase.from("classi").select("id", { count: "exact", head: true }).eq("attiva", true),
     supabase.from("iscrizioni").select("id", { count: "exact", head: true }).eq("stato", "richiesta"),
+    supabase
+      .from("pagamenti")
+      .select("id", { count: "exact", head: true })
+      .in("stato", ["da_pagare", "parziale", "scaduto"]),
   ]);
 
   const stats = [
     { titolo: "Studenti iscritti", valore: studenti.count ?? "—" },
     { titolo: "Classi attive", valore: classi.count ?? "—" },
     { titolo: "Iscrizioni in attesa", valore: richieste.count ?? "—" },
-    { titolo: "Pagamenti in sospeso", valore: "—" },
+    { titolo: "Pagamenti in sospeso", valore: pagamentiSospesi.count ?? "—" },
   ];
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">Panoramica</h1>
       <p className="text-muted-foreground">
-        Le sezioni pagamenti e comunicazioni arrivano nelle prossime milestone.
+        La sezione comunicazioni arriva nella prossima milestone.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
