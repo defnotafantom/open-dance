@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
+import { PushToggle } from "@/components/push-toggle";
 import {
   Avatar,
   AvatarFallback,
@@ -50,6 +51,7 @@ export function AppShell({
             <p className="truncate text-muted-foreground text-xs">{profile.email}</p>
           </div>
         </div>
+        <PushToggle />
         <form action={logout}>
           <Button type="submit" variant="outline" size="sm" className="w-full">
             Esci

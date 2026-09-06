@@ -158,6 +158,7 @@ export interface Database {
           stato: PagamentoStatoEnum;
           note: string | null;
           registrato_da: string | null;
+          promemoria_inviato_at: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["pagamenti"]["Row"]> & {

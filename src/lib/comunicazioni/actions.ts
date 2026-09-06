@@ -3,10 +3,78 @@
 import { revalidatePath } from "next/cache";
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { comunicazioneSchema, type ComunicazioneInput } from "@/lib/comunicazioni/schemas";
+import { comunicazioneSchema, type ComunicazioneInput, type TargetInput } from "@/lib/comunicazioni/schemas";
 import type { RuoloEnum } from "@/lib/supabase/database.types";
+import { inviaPushAProfili } from "@/lib/push/send";
 
 export type ActionResult = { error?: string };
+
+async function risolviDestinatariPush(
+  target: TargetInput
+): Promise<string[]> {
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+
+  if (target.tipo === "tutti") {
+    const { data } = await admin.from("profiles").select("id");
+    return (data ?? []).map((p) => p.id);
+  }
+
+  if (target.tipo === "ruolo") {
+    const { data } = await admin.from("profiles").select("id").eq("ruolo", target.ruolo);
+    return (data ?? []).map((p) => p.id);
+  }
+
+  if (target.tipo === "corso") {
+    const { data: classi } = await admin.from("classi").select("id").eq("corso_id", target.corso_id);
+    const classeIds = (classi ?? []).map((c) => c.id);
+    if (classeIds.length === 0) return [];
+    const { data: iscrizioni } = await admin
+      .from("iscrizioni")
+      .select("studente_id")
+      .in("classe_id", classeIds)
+      .eq("stato", "attiva");
+    const studenteIds = [...new Set((iscrizioni ?? []).map((i) => i.studente_id))];
+    if (studenteIds.length === 0) return [];
+    const { data: studenti } = await admin
+      .from("studenti")
+      .select("genitore_id, profilo_id")
+      .in("id", studenteIds);
+    return [
+      ...new Set(
+        (studenti ?? [])
+          .map((s) => s.genitore_id ?? s.profilo_id)
+          .filter((id): id is string => !!id)
+      ),
+    ];
+  }
+
+  // classe
+  const { data: classe } = await admin
+    .from("classi")
+    .select("insegnante_id")
+    .eq("id", target.classe_id)
+    .single();
+  const { data: iscrizioni } = await admin
+    .from("iscrizioni")
+    .select("studente_id")
+    .eq("classe_id", target.classe_id)
+    .eq("stato", "attiva");
+  const studenteIds = [...new Set((iscrizioni ?? []).map((i) => i.studente_id))];
+  const { data: studenti } =
+    studenteIds.length > 0
+      ? await admin.from("studenti").select("genitore_id, profilo_id").in("id", studenteIds)
+      : { data: [] as { genitore_id: string | null; profilo_id: string | null }[] };
+
+  return [
+    ...new Set(
+      [
+        ...(studenti ?? []).map((s) => s.genitore_id ?? s.profilo_id),
+        classe?.insegnante_id,
+      ].filter((id): id is string => !!id)
+    ),
+  ];
+}
 
 export async function pubblicaComunicazione(input: ComunicazioneInput): Promise<ActionResult> {
   const profile = await getProfile();
@@ -56,6 +124,19 @@ export async function pubblicaComunicazione(input: ComunicazioneInput): Promise<
       await supabase.from("comunicazioni").delete().eq("id", comunicazione.id);
       return { error: targetError.message };
     }
+  }
+
+  // Notifica push: best-effort, non deve far fallire la pubblicazione se
+  // le chiavi VAPID non sono configurate o l'invio fallisce.
+  try {
+    const destinatari = await risolviDestinatariPush(parsed.data.target);
+    await inviaPushAProfili(destinatari, {
+      title: parsed.data.titolo,
+      body: parsed.data.corpo.slice(0, 140),
+      url: "/",
+    });
+  } catch {
+    // ignorato volutamente
   }
 
   revalidatePath("/admin/comunicazioni");

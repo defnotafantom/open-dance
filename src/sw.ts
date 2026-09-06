@@ -32,3 +32,42 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// Notifiche push: payload JSON { title, body, url }. Il click apre (o porta
+// in primo piano) l'app sulla pagina indicata invece di limitarsi a
+// chiudere la notifica.
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let payload: { title?: string; body?: string; url?: string } = {};
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { body: event.data.text() };
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title ?? "Open Dance", {
+      body: payload.body ?? "",
+      icon: "/icons/192",
+      badge: "/icons/192",
+      data: { url: payload.url ?? "/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client && client.url === url) {
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});
