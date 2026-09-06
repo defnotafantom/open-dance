@@ -17,17 +17,37 @@ export async function richiediIscrizione(
     .select("id")
     .eq("studente_id", studenteId)
     .eq("classe_id", classeId)
-    .in("stato", ["richiesta", "attiva"])
+    .in("stato", ["richiesta", "attiva", "lista_attesa"])
     .maybeSingle();
 
   if (esistente) {
     return { error: "Esiste gia' un'iscrizione o una richiesta per questa classe." };
   }
 
+  // Se la classe ha raggiunto la capienza massima, la richiesta va in lista
+  // d'attesa invece che nella coda di approvazione ordinaria.
+  const { data: classe } = await supabase
+    .from("classi")
+    .select("capienza_max")
+    .eq("id", classeId)
+    .single();
+
+  let stato: "richiesta" | "lista_attesa" = "richiesta";
+  if (classe?.capienza_max) {
+    const { count } = await supabase
+      .from("iscrizioni")
+      .select("id", { count: "exact", head: true })
+      .eq("classe_id", classeId)
+      .eq("stato", "attiva");
+    if ((count ?? 0) >= classe.capienza_max) {
+      stato = "lista_attesa";
+    }
+  }
+
   const { error } = await supabase.from("iscrizioni").insert({
     studente_id: studenteId,
     classe_id: classeId,
-    stato: "richiesta",
+    stato,
   });
 
   if (error) {

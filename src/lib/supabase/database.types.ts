@@ -3,7 +3,12 @@
 //   npx supabase gen types typescript --project-id <id> > src/lib/supabase/database.types.ts
 
 export type RuoloEnum = "admin" | "staff" | "insegnante" | "genitore" | "allievo_adulto";
-export type IscrizioneStatoEnum = "richiesta" | "attiva" | "sospesa" | "terminata";
+export type IscrizioneStatoEnum =
+  | "richiesta"
+  | "attiva"
+  | "sospesa"
+  | "terminata"
+  | "lista_attesa";
 export type LezioneStatoEnum = "regolare" | "annullata" | "recuperata";
 export type PresenzaStatoEnum = "presente" | "assente" | "giustificato";
 export type PagamentoTipoEnum = "quota_corso" | "iscrizione_annuale" | "saggio" | "altro";
@@ -100,6 +105,7 @@ export interface Database {
           orario_inizio: string | null;
           orario_fine: string | null;
           stato: LezioneStatoEnum;
+          sostituita_da_lezione_id: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["lezioni"]["Row"]> & { classe_id: string; data: string };

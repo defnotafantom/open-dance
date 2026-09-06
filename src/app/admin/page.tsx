@@ -7,7 +7,10 @@ export default async function AdminPage() {
   const [studenti, classi, richieste, pagamentiSospesi] = await Promise.all([
     supabase.from("studenti").select("id", { count: "exact", head: true }),
     supabase.from("classi").select("id", { count: "exact", head: true }).eq("attiva", true),
-    supabase.from("iscrizioni").select("id", { count: "exact", head: true }).eq("stato", "richiesta"),
+    supabase
+      .from("iscrizioni")
+      .select("id", { count: "exact", head: true })
+      .in("stato", ["richiesta", "lista_attesa"]),
     supabase
       .from("pagamenti")
       .select("id", { count: "exact", head: true })

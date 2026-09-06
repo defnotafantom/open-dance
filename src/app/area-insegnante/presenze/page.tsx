@@ -3,6 +3,7 @@ import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { assicuraLezioni } from "@/lib/lezioni/actions";
 import { Badge } from "@/components/ui/badge";
+import { LezioneAzioni } from "./lezione-azioni";
 
 export default async function PresenzePage() {
   const profile = await getProfile();
@@ -46,7 +47,7 @@ export default async function PresenzePage() {
 
   const { data: lezioni, error } = await supabase
     .from("lezioni")
-    .select("id, classe_id, data, stato")
+    .select("id, classe_id, data, stato, orario_inizio, orario_fine, sostituita_da_lezione_id")
     .in("classe_id", classeIds)
     .gte("data", daData)
     .lte("data", aData)
@@ -56,6 +57,16 @@ export default async function PresenzePage() {
   const { data: corsi } = await supabase.from("corsi").select("id, nome").in("id", corsoIds);
   const corsoNomeById = new Map((corsi ?? []).map((c) => [c.id, c.nome]));
   const corsoIdByClasse = new Map(classi.map((c) => [c.id, c.corso_id]));
+
+  const classeById = new Map(classi.map((c) => [c.id, c]));
+
+  // Le classi hanno un orario_inizio/fine di default, usati come proposta
+  // iniziale quando si programma un recupero.
+  const { data: classiOrari } = await supabase
+    .from("classi")
+    .select("id, orario_inizio, orario_fine")
+    .in("id", classeIds);
+  const orariByClasse = new Map((classiOrari ?? []).map((c) => [c.id, c]));
 
   // Quanti allievi sono attesi (iscritti attivi) per ciascuna classe, per
   // confrontarli con le conferme ricevute e mostrare "X su Y confermati".
@@ -86,6 +97,15 @@ export default async function PresenzePage() {
     }
   }
 
+  const recuperoIds = (lezioni ?? [])
+    .map((l) => l.sostituita_da_lezione_id)
+    .filter((id): id is string => !!id);
+  const { data: recuperi } =
+    recuperoIds.length > 0
+      ? await supabase.from("lezioni").select("id, data").in("id", recuperoIds)
+      : { data: [] as { id: string; data: string }[] };
+  const recuperoDataById = new Map((recuperi ?? []).map((r) => [r.id, r.data]));
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">Presenze</h1>
@@ -97,33 +117,54 @@ export default async function PresenzePage() {
         <p className="text-muted-foreground text-sm">Nessuna lezione in programma.</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {lezioni.map((l) => (
-            <li key={l.id}>
-              <Link
-                href={`/area-insegnante/presenze/${l.id}`}
-                className="flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted"
+          {lezioni.map((l) => {
+            const orariDefault = orariByClasse.get(l.classe_id);
+            return (
+              <li
+                key={l.id}
+                className="flex flex-col gap-2 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <span>
-                  {corsoNomeById.get(corsoIdByClasse.get(l.classe_id) ?? "") ?? "Corso"} —{" "}
-                  {new Date(l.data).toLocaleDateString("it-IT", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </span>
-                <div className="flex gap-2">
-                  {l.data >= dataOggi && (totaleAttesiByClasse.get(l.classe_id) ?? 0) > 0 && (
-                    <Badge variant="secondary">
-                      {confermatiByLezione.get(l.id) ?? 0}/{totaleAttesiByClasse.get(l.classe_id)}{" "}
-                      confermati
-                    </Badge>
-                  )}
-                  {l.data === dataOggi && <Badge>Oggi</Badge>}
-                  {l.stato === "annullata" && <Badge variant="destructive">Annullata</Badge>}
-                </div>
-              </Link>
-            </li>
-          ))}
+                <Link
+                  href={`/area-insegnante/presenze/${l.id}`}
+                  className="flex flex-1 items-center justify-between gap-2 hover:underline"
+                >
+                  <span>
+                    {corsoNomeById.get(corsoIdByClasse.get(l.classe_id) ?? "") ?? "Corso"} —{" "}
+                    {new Date(l.data).toLocaleDateString("it-IT", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}
+                  </span>
+                  <div className="flex gap-2">
+                    {l.data >= dataOggi && (totaleAttesiByClasse.get(l.classe_id) ?? 0) > 0 && (
+                      <Badge variant="secondary">
+                        {confermatiByLezione.get(l.id) ?? 0}/{totaleAttesiByClasse.get(l.classe_id)}{" "}
+                        confermati
+                      </Badge>
+                    )}
+                    {l.data === dataOggi && <Badge>Oggi</Badge>}
+                    {l.stato === "annullata" && <Badge variant="destructive">Annullata</Badge>}
+                    {l.stato === "recuperata" && <Badge variant="secondary">Recupero</Badge>}
+                  </div>
+                </Link>
+                {classeById.has(l.classe_id) && (
+                  <LezioneAzioni
+                    lezioneId={l.id}
+                    classeId={l.classe_id}
+                    stato={l.stato}
+                    orarioInizioDefault={l.orario_inizio ?? orariDefault?.orario_inizio ?? "17:00"}
+                    orarioFineDefault={l.orario_fine ?? orariDefault?.orario_fine ?? "18:00"}
+                    recuperoData={
+                      l.sostituita_da_lezione_id
+                        ? recuperoDataById.get(l.sostituita_da_lezione_id)
+                        : undefined
+                    }
+                  />
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

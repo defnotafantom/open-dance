@@ -50,7 +50,7 @@ export default async function PresenzeGenitorePage() {
           .from("lezioni")
           .select("id, classe_id, data, orario_inizio")
           .in("classe_id", classeIds)
-          .eq("stato", "regolare")
+          .in("stato", ["regolare", "recuperata"])
           .gte("data", oggi)
           .lte("data", tra14Giorni)
           .order("data")

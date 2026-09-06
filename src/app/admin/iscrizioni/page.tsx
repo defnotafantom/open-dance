@@ -5,35 +5,50 @@ import { IscrizioniTable, type RichiestaIscrizione } from "./iscrizioni-table";
 export default async function IscrizioniPage() {
   const supabase = await createClient();
 
-  const { data: richieste, error } = await supabase
+  const { data: righeIscrizioni, error } = await supabase
     .from("iscrizioni")
-    .select("id, studente_id, classe_id, data_iscrizione")
-    .eq("stato", "richiesta")
+    .select("id, studente_id, classe_id, data_iscrizione, stato")
+    .in("stato", ["richiesta", "lista_attesa"])
     .order("data_iscrizione");
 
-  if (error || !richieste || richieste.length === 0) {
+  if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
-        {error ? (
-          <p className="text-destructive text-sm">Impossibile caricare le richieste: {error.message}</p>
-        ) : (
-          <IscrizioniTable richieste={[]} />
-        )}
+        <h1 className="text-2xl font-semibold">Iscrizioni</h1>
+        <p className="text-destructive text-sm">Impossibile caricare le richieste: {error.message}</p>
       </div>
     );
   }
 
-  const studenteIds = [...new Set(richieste.map((r) => r.studente_id))];
-  const classeIds = [...new Set(richieste.map((r) => r.classe_id))];
+  const righe = righeIscrizioni ?? [];
+  const studenteIds = [...new Set(righe.map((r) => r.studente_id))];
+  const classeIds = [...new Set(righe.map((r) => r.classe_id))];
 
   const [{ data: studenti }, { data: classi }] = await Promise.all([
-    supabase.from("studenti").select("id, nome, cognome").in("id", studenteIds),
-    supabase.from("classi").select("id, corso_id, giorno_settimana, orario_inizio, orario_fine").in("id", classeIds),
+    studenteIds.length > 0
+      ? supabase.from("studenti").select("id, nome, cognome").in("id", studenteIds)
+      : Promise.resolve({ data: [] as { id: string; nome: string; cognome: string }[] }),
+    classeIds.length > 0
+      ? supabase
+          .from("classi")
+          .select("id, corso_id, giorno_settimana, orario_inizio, orario_fine")
+          .in("id", classeIds)
+      : Promise.resolve({
+          data: [] as {
+            id: string;
+            corso_id: string;
+            giorno_settimana: number;
+            orario_inizio: string;
+            orario_fine: string;
+          }[],
+        }),
   ]);
 
   const corsoIds = [...new Set((classi ?? []).map((c) => c.corso_id))];
-  const { data: corsi } = await supabase.from("corsi").select("id, nome").in("id", corsoIds);
+  const { data: corsi } =
+    corsoIds.length > 0
+      ? await supabase.from("corsi").select("id, nome").in("id", corsoIds)
+      : { data: [] as { id: string; nome: string }[] };
 
   const studenteById = new Map((studenti ?? []).map((s) => [s.id, `${s.nome} ${s.cognome}`]));
   const corsoNomeById = new Map((corsi ?? []).map((c) => [c.id, c.nome]));
@@ -44,17 +59,37 @@ export default async function IscrizioniPage() {
     ])
   );
 
-  const righe: RichiestaIscrizione[] = richieste.map((r) => ({
-    id: r.id,
-    studente_nome: studenteById.get(r.studente_id) ?? "Studente",
-    classe_label: classeById.get(r.classe_id) ?? "Classe",
-    data_iscrizione: r.data_iscrizione,
-  }));
+  function aRighe(stato: string): RichiestaIscrizione[] {
+    return righe
+      .filter((r) => r.stato === stato)
+      .map((r) => ({
+        id: r.id,
+        studente_nome: studenteById.get(r.studente_id) ?? "Studente",
+        classe_label: classeById.get(r.classe_id) ?? "Classe",
+        data_iscrizione: r.data_iscrizione,
+      }));
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
-      <IscrizioniTable richieste={righe} />
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
+        <IscrizioniTable richieste={aRighe("richiesta")} />
+      </div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Lista d&apos;attesa</h2>
+          <p className="text-muted-foreground text-sm">
+            Richieste arrivate quando la classe aveva gia&apos; raggiunto la capienza massima.
+          </p>
+        </div>
+        <IscrizioniTable
+          richieste={aRighe("lista_attesa")}
+          messaggioVuoto="Nessuno in lista d'attesa."
+          etichettaApprova="Promuovi"
+          etichettaRifiuta="Rimuovi"
+        />
+      </div>
     </div>
   );
 }

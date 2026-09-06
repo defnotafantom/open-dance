@@ -20,13 +20,21 @@ export type RichiestaIscrizione = {
   data_iscrizione: string;
 };
 
-export function IscrizioniTable({ richieste }: { richieste: RichiestaIscrizione[] }) {
+export function IscrizioniTable({
+  richieste,
+  messaggioVuoto = "Nessuna richiesta in attesa.",
+  etichettaApprova = "Approva",
+  etichettaRifiuta = "Rifiuta",
+}: {
+  richieste: RichiestaIscrizione[];
+  messaggioVuoto?: string;
+  etichettaApprova?: string;
+  etichettaRifiuta?: string;
+}) {
   const router = useRouter();
 
   if (richieste.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">Nessuna richiesta in attesa.</p>
-    );
+    return <p className="text-muted-foreground text-sm">{messaggioVuoto}</p>;
   }
 
   return (
@@ -58,7 +66,7 @@ export function IscrizioniTable({ richieste }: { richieste: RichiestaIscrizione[
                   router.refresh();
                 }}
               >
-                Approva
+                {etichettaApprova}
               </Button>
               <Button
                 size="sm"
@@ -69,11 +77,11 @@ export function IscrizioniTable({ richieste }: { richieste: RichiestaIscrizione[
                     toast.error(result.error);
                     return;
                   }
-                  toast.success("Richiesta rifiutata.");
+                  toast.success("Rimossa.");
                   router.refresh();
                 }}
               >
-                Rifiuta
+                {etichettaRifiuta}
               </Button>
             </TableCell>
           </TableRow>

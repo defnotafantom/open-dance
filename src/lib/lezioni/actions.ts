@@ -1,6 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { requireRuolo } from "@/lib/auth/dal";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+export type ActionResult = { error?: string };
 
 function formatDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -65,4 +70,87 @@ export async function assicuraLezioni(
     onConflict: "classe_id,data",
     ignoreDuplicates: true,
   });
+}
+
+async function verificaProprietaClasse(classeId: string) {
+  const profile = await requireRuolo(["admin", "staff", "insegnante"]);
+  if (profile.ruolo === "insegnante") {
+    const supabase = await createClient();
+    const { data: classe } = await supabase
+      .from("classi")
+      .select("insegnante_id")
+      .eq("id", classeId)
+      .single();
+    if (!classe || classe.insegnante_id !== profile.id) {
+      return { error: "Questa classe non e' tua." };
+    }
+  }
+  return {};
+}
+
+export async function annullaLezione(lezioneId: string, classeId: string): Promise<ActionResult> {
+  const verifica = await verificaProprietaClasse(classeId);
+  if (verifica.error) {
+    return verifica;
+  }
+
+  // Client service-role: un insegnante non-staff non ha permessi RLS per
+  // scrivere su "lezioni" (l'inserimento/modifica e' pensato come
+  // operazione di sistema, vedi assicuraLezioni piu' sopra).
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("lezioni")
+    .update({ stato: "annullata" })
+    .eq("id", lezioneId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/area-insegnante/presenze");
+  revalidatePath("/area-genitore/presenze");
+  return {};
+}
+
+export async function programmaRecupero(
+  lezioneOriginaleId: string,
+  classeId: string,
+  data: string,
+  orarioInizio: string,
+  orarioFine: string
+): Promise<ActionResult> {
+  const verifica = await verificaProprietaClasse(classeId);
+  if (verifica.error) {
+    return verifica;
+  }
+
+  const admin = createAdminClient();
+  const { data: recupero, error } = await admin
+    .from("lezioni")
+    .insert({
+      classe_id: classeId,
+      data,
+      orario_inizio: orarioInizio,
+      orario_fine: orarioFine,
+      stato: "recuperata",
+    })
+    .select("id")
+    .single();
+
+  if (error || !recupero) {
+    return { error: error?.message ?? "Impossibile creare il recupero." };
+  }
+
+  const { error: linkError } = await admin
+    .from("lezioni")
+    .update({ sostituita_da_lezione_id: recupero.id })
+    .eq("id", lezioneOriginaleId);
+
+  if (linkError) {
+    return { error: linkError.message };
+  }
+
+  revalidatePath("/area-insegnante/presenze");
+  revalidatePath("/area-genitore/presenze");
+  return {};
 }

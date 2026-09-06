@@ -20,7 +20,7 @@ export type FiglioConStato = {
   nome: string;
   cognome: string;
   iscrizioneId?: string;
-  stato?: "richiesta" | "attiva";
+  stato?: "richiesta" | "attiva" | "lista_attesa";
 };
 
 export function RichiediIscrizioneDialog({
@@ -80,9 +80,11 @@ export function RichiediIscrizioneDialog({
               </span>
               {figlio.stato === "attiva" ? (
                 <Badge>Iscritto/a</Badge>
-              ) : figlio.stato === "richiesta" ? (
+              ) : figlio.stato === "richiesta" || figlio.stato === "lista_attesa" ? (
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">In attesa</Badge>
+                  <Badge variant="secondary">
+                    {figlio.stato === "lista_attesa" ? "In lista d'attesa" : "In attesa"}
+                  </Badge>
                   <Button
                     variant="outline"
                     size="sm"
