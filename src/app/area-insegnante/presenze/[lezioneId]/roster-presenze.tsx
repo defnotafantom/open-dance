@@ -5,6 +5,7 @@ import { segnaPresenza, type StatoPresenza } from "@/lib/presenze/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { vibrataConferma } from "@/lib/haptics";
 
 export type AllievoConPresenza = {
   id: string;
@@ -39,6 +40,7 @@ export function RosterPresenze({
   const [pending, startTransition] = useTransition();
 
   function handleClick(studenteId: string, stato: StatoPresenza) {
+    vibrataConferma();
     setStati((prev) => ({ ...prev, [studenteId]: stato }));
     startTransition(async () => {
       const result = await segnaPresenza(lezioneId, studenteId, stato);

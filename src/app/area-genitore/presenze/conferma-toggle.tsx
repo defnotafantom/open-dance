@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { confermaPresenza } from "@/lib/conferme/actions";
 import { Button } from "@/components/ui/button";
+import { vibrataConferma } from "@/lib/haptics";
 
 export type ProssimaLezione = {
   lezioneId: string;
@@ -31,6 +32,7 @@ export function ProssimeLezioniList({ righe }: { righe: ProssimaLezione[] }) {
 
   function handleClick(lezioneId: string, studenteId: string, verra: boolean) {
     const key = `${lezioneId}:${studenteId}`;
+    vibrataConferma();
     setStati((prev) => ({ ...prev, [key]: verra }));
     startTransition(async () => {
       const result = await confermaPresenza(lezioneId, studenteId, verra);

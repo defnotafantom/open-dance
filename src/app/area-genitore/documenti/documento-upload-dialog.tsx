@@ -7,6 +7,7 @@ import { caricaDocumento } from "@/lib/documenti/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CameraIcon, FileUpIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,14 +34,22 @@ export function DocumentoUploadDialog({
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [studenteId, setStudenteId] = useState(studenti[0]?.id ?? "");
+  const [fileScelto, setFileScelto] = useState<File | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!fileScelto) {
+      toast.error("Scatta una foto o scegli un file da caricare.");
+      return;
+    }
     setPending(true);
     const formData = new FormData(e.currentTarget);
+    formData.set("file", fileScelto);
     const result = await caricaDocumento(formData);
     setPending(false);
 
@@ -51,6 +60,7 @@ export function DocumentoUploadDialog({
 
     toast.success("Documento caricato.");
     setOpen(false);
+    setFileScelto(null);
     formRef.current?.reset();
     router.refresh();
   }
@@ -96,15 +106,43 @@ export function DocumentoUploadDialog({
             <Input id="data_scadenza" name="data_scadenza" type="date" />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="file">File</Label>
+            <Label>Documento</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fotoInputRef.current?.click()}
+              >
+                <CameraIcon /> Scatta una foto
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <FileUpIcon /> Scegli un file
+              </Button>
+            </div>
             <input
-              id="file"
-              name="file"
+              ref={fotoInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => setFileScelto(e.target.files?.[0] ?? null)}
+            />
+            <input
+              ref={fileInputRef}
               type="file"
               accept=".pdf,image/*"
-              required
-              className="text-sm file:mr-3 file:rounded-md file:border file:bg-transparent file:px-2.5 file:py-1.5 file:text-sm"
+              className="hidden"
+              onChange={(e) => setFileScelto(e.target.files?.[0] ?? null)}
             />
+            {fileScelto && (
+              <p className="text-muted-foreground truncate text-sm">
+                Selezionato: {fileScelto.name}
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending}>

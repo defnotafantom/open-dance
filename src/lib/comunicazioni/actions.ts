@@ -145,6 +145,21 @@ export async function pubblicaComunicazione(input: ComunicazioneInput): Promise<
   return {};
 }
 
+/** Usata per il badge sull'icona dell'app (Badging API) e per il riepilogo
+ * nella home famiglia: numero di comunicazioni non ancora lette. */
+export async function contaComunicazioniNonLette(): Promise<number> {
+  const profile = await getProfile();
+  const supabase = await createClient();
+
+  const [{ data: comunicazioni }, { data: letture }] = await Promise.all([
+    supabase.from("comunicazioni").select("id"),
+    supabase.from("letture_comunicazioni").select("comunicazione_id").eq("profilo_id", profile.id),
+  ]);
+
+  const letteIds = new Set((letture ?? []).map((l) => l.comunicazione_id));
+  return (comunicazioni ?? []).filter((c) => !letteIds.has(c.id)).length;
+}
+
 export async function segnaComunicazioneLetta(comunicazioneId: string): Promise<ActionResult> {
   const profile = await getProfile();
   const supabase = await createClient();

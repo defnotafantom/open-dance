@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { vibrataConferma } from "@/lib/haptics";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export function ConfirmActionDialog({
 
   async function handleConfirm() {
     setPending(true);
+    vibrataConferma();
     await onConfirm();
     setPending(false);
     setOpen(false);

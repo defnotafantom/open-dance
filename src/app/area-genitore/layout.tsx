@@ -1,5 +1,7 @@
 import { requireRuolo } from "@/lib/auth/dal";
 import { AppShell, type NavItem } from "@/components/layout/app-shell";
+import { AppBadge } from "@/components/app-badge";
+import { contaComunicazioniNonLette } from "@/lib/comunicazioni/actions";
 
 const NAV: NavItem[] = [
   { href: "/area-genitore", label: "Panoramica" },
@@ -19,9 +21,11 @@ export default async function AreaGenitoreLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireRuolo(["allievo"]);
+  const nonLette = await contaComunicazioniNonLette();
 
   return (
     <AppShell title="Area famiglia" nav={NAV} profile={profile}>
+      <AppBadge count={nonLette} />
       {children}
     </AppShell>
   );

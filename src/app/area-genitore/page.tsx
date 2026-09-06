@@ -2,9 +2,10 @@ import Link from "next/link";
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { assicuraLezioni } from "@/lib/lezioni/actions";
+import { contaComunicazioniNonLette } from "@/lib/comunicazioni/actions";
 import { GIORNI_SETTIMANA } from "@/lib/corsi/schemas";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MessageSquareWarning, Users, Wallet } from "lucide-react";
+import { CalendarDays, MapPin, MessageSquareWarning, Phone, Users, Wallet } from "lucide-react";
 
 export default async function AreaGenitorePage() {
   const profile = await getProfile();
@@ -18,7 +19,7 @@ export default async function AreaGenitorePage() {
   const figliIds = figli.map((f) => f.id);
 
   const vuoto = { data: [] as Record<string, unknown>[] };
-  const [{ data: iscrizioni }, { data: pagamenti }, { data: comunicazioni }] =
+  const [{ data: iscrizioni }, { data: pagamenti }, nonLette] =
     figliIds.length > 0
       ? await Promise.all([
           supabase
@@ -31,9 +32,9 @@ export default async function AreaGenitorePage() {
             .select("id, importo_dovuto, importo_pagato, stato")
             .in("studente_id", figliIds)
             .in("stato", ["da_pagare", "parziale", "scaduto"]),
-          supabase.from("comunicazioni").select("id, created_at").order("created_at", { ascending: false }),
+          contaComunicazioniNonLette(),
         ])
-      : [vuoto, vuoto, vuoto];
+      : [vuoto, vuoto, await contaComunicazioniNonLette()];
 
   const classeIds = [...new Set((iscrizioni ?? []).map((i) => i.classe_id as string))];
   await assicuraLezioni(classeIds, 0, 2);
@@ -67,17 +68,16 @@ export default async function AreaGenitorePage() {
     (classiInfo ?? []).map((c) => [c.id, (corsi ?? []).find((co) => co.id === c.corso_id)?.nome ?? "Corso"])
   );
 
-  const { data: letture } = await supabase
-    .from("letture_comunicazioni")
-    .select("comunicazione_id")
-    .eq("profilo_id", profile.id);
-  const letteIds = new Set((letture ?? []).map((l) => l.comunicazione_id));
-  const nonLette = (comunicazioni ?? []).filter((c) => !letteIds.has(c.id as string)).length;
-
   const totaleDaSaldare = (pagamenti ?? []).reduce(
     (acc, p) => acc + (Number(p.importo_dovuto) - Number(p.importo_pagato)),
     0
   );
+
+  const { data: scuola } = await supabase
+    .from("impostazioni_scuola")
+    .select("nome_scuola, indirizzo, telefono")
+    .eq("id", 1)
+    .maybeSingle();
 
   const stats = [
     { icona: Users, titolo: "Iscritti", valore: String(figli.length) },
@@ -147,6 +147,37 @@ export default async function AreaGenitorePage() {
         <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/area-genitore/comunicazioni">Comunicazioni</Link>} />
         <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/area-genitore/figli">Iscritti</Link>} />
       </div>
+
+      {scuola?.indirizzo && (
+        <div className="flex flex-col gap-3 rounded-lg border p-4">
+          <p className="font-medium">{scuola.nome_scuola}</p>
+          <p className="text-muted-foreground text-sm">{scuola.indirizzo}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(scuola.indirizzo)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MapPin /> Apri in Mappe
+                </a>
+              }
+            />
+            {scuola.telefono && (
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<a href={`tel:${scuola.telefono}`}><Phone /> Chiama</a>}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
