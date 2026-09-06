@@ -2,6 +2,8 @@ import Link from "next/link";
 import { logout } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { PushToggle } from "@/components/push-toggle";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { Logo } from "@/components/brand/logo";
 import {
   Avatar,
   AvatarFallback,
@@ -24,31 +26,25 @@ export function AppShell({
 
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      <aside className="flex flex-col gap-4 border-b bg-muted/30 p-4 md:w-56 md:border-b-0 md:border-r">
-        <Link href="/" className="text-lg font-semibold">
-          Open Dance
+      <aside className="dark flex flex-col gap-4 border-b border-sidebar-border bg-sidebar p-4 text-sidebar-foreground md:w-60 md:border-b-0 md:border-r">
+        <Link href="/">
+          <Logo size={32} />
         </Link>
-        <p className="text-muted-foreground text-xs">{title}</p>
-        <nav className="flex flex-row flex-wrap gap-1 md:flex-col">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto flex items-center gap-2 pt-4">
+        <p className="-mt-2 text-[0.7rem] font-medium tracking-wide text-sidebar-foreground/50 uppercase">
+          {title}
+        </p>
+        <SidebarNav nav={nav} />
+        <div className="mt-auto flex items-center gap-2 border-t border-sidebar-border pt-4">
           <Avatar>
-            <AvatarFallback>{iniziali || "?"}</AvatarFallback>
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
+              {iniziali || "?"}
+            </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">
               {profile.nome} {profile.cognome}
             </p>
-            <p className="truncate text-muted-foreground text-xs">{profile.email}</p>
+            <p className="truncate text-sidebar-foreground/50 text-xs">{profile.email}</p>
           </div>
         </div>
         <PushToggle />
