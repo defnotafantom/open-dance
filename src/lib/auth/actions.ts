@@ -2,12 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { areaPerRuolo } from "@/lib/auth/dal";
 import {
   loginSchema,
   registratiSchema,
   recuperaPasswordSchema,
   nuovaPasswordSchema,
+  VERSIONE_INFORMATIVA_PRIVACY,
 } from "@/lib/auth/schemas";
 
 export type FormState =
@@ -58,6 +60,8 @@ export async function registrati(
     password: formData.get("password"),
     confermaPassword: formData.get("confermaPassword"),
     tipo: formData.get("tipo"),
+    accettaPrivacy: formData.get("accettaPrivacy") === "on",
+    accettaFotoVideo: formData.get("accettaFotoVideo") === "on",
   });
 
   if (!parsed.success) {
@@ -79,6 +83,26 @@ export async function registrati(
 
   if (error) {
     return { error: error.message };
+  }
+
+  if (data.user) {
+    // Client con service-role: il consenso va registrato anche se la
+    // conferma email e' attiva e non esiste ancora una sessione.
+    const admin = createAdminClient();
+    await admin.from("consensi_privacy").insert([
+      {
+        profilo_id: data.user.id,
+        tipo_consenso: "trattamento_dati",
+        concesso: true,
+        versione_informativa: VERSIONE_INFORMATIVA_PRIVACY,
+      },
+      {
+        profilo_id: data.user.id,
+        tipo_consenso: "foto_video",
+        concesso: parsed.data.accettaFotoVideo,
+        versione_informativa: VERSIONE_INFORMATIVA_PRIVACY,
+      },
+    ]);
   }
 
   if (!data.session) {

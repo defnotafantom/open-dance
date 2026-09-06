@@ -5,6 +5,8 @@ export const loginSchema = z.object({
   password: z.string().min(1, { error: "Inserisci la password." }),
 });
 
+export const VERSIONE_INFORMATIVA_PRIVACY = "v1-2026-09";
+
 export const registratiSchema = z
   .object({
     nome: z.string().min(1, { error: "Inserisci il nome." }),
@@ -15,6 +17,10 @@ export const registratiSchema = z
     tipo: z.enum(["genitore", "allievo_adulto"], {
       error: "Seleziona il tipo di account.",
     }),
+    accettaPrivacy: z.boolean().refine((v) => v, {
+      error: "Devi accettare l'informativa privacy per registrarti.",
+    }),
+    accettaFotoVideo: z.boolean(),
   })
   .refine((data) => data.password === data.confermaPassword, {
     error: "Le password non coincidono.",

@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -108,6 +109,23 @@ export function RegistratiForm() {
                 {state.fieldErrors.confermaPassword[0]}
               </p>
             )}
+          </div>
+          <div className="flex flex-col gap-2 border-t pt-4">
+            <div className="flex items-start gap-2">
+              <Checkbox id="accettaPrivacy" name="accettaPrivacy" required className="mt-0.5" />
+              <Label htmlFor="accettaPrivacy" className="font-normal">
+                Ho letto e accetto l&apos;informativa sul trattamento dei dati.
+              </Label>
+            </div>
+            {state?.fieldErrors?.accettaPrivacy && (
+              <p className="text-destructive text-sm">{state.fieldErrors.accettaPrivacy[0]}</p>
+            )}
+            <div className="flex items-start gap-2">
+              <Checkbox id="accettaFotoVideo" name="accettaFotoVideo" className="mt-0.5" />
+              <Label htmlFor="accettaFotoVideo" className="font-normal">
+                Acconsento all&apos;uso di foto/video durante saggi ed eventi (facoltativo).
+              </Label>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
