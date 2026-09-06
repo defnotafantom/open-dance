@@ -74,7 +74,7 @@ export default async function PresenzeLezionePage({
         <Link href="/area-insegnante/presenze" className="text-muted-foreground text-sm hover:underline">
           ← Tutte le lezioni
         </Link>
-        <h1 className="text-2xl font-semibold">
+        <h1 className="font-display text-3xl uppercase tracking-tight">
           {corso?.nome ?? "Corso"} —{" "}
           {new Date(lezione.data).toLocaleDateString("it-IT", {
             weekday: "long",

@@ -3,6 +3,7 @@ import { logout } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { PushToggle } from "@/components/push-toggle";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { Logo } from "@/components/brand/logo";
 import {
   Avatar,
@@ -26,7 +27,17 @@ export function AppShell({
 
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      <aside className="dark flex flex-col gap-4 border-b border-sidebar-border bg-sidebar p-4 text-sidebar-foreground md:w-60 md:border-b-0 md:border-r">
+      {/* Barra mobile: la navigazione principale vive nel drawer, non in una
+          lista orizzontale che andrebbe a capo con 8+ voci su schermi stretti
+          — la stragrande maggioranza di chi usa il sito e' da telefono. */}
+      <header className="dark flex items-center justify-between border-b border-sidebar-border bg-sidebar px-3 py-2 text-sidebar-foreground md:hidden">
+        <Link href="/" className="flex items-center gap-2 px-1">
+          <Logo size={28} />
+        </Link>
+        <MobileNav nav={nav} title={title} profile={profile} />
+      </header>
+
+      <aside className="dark hidden flex-col gap-4 border-sidebar-border bg-sidebar p-4 text-sidebar-foreground md:flex md:w-60 md:border-r">
         <Link href="/">
           <Logo size={32} />
         </Link>

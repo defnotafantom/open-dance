@@ -18,7 +18,7 @@ export default async function FigliPage() {
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Iscritti</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Iscritti</h1>
         <p className="text-destructive text-sm">Impossibile caricare i dati: {error.message}</p>
       </div>
     );
@@ -30,7 +30,7 @@ export default async function FigliPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold">Iscritti</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Iscritti</h1>
         <p className="text-muted-foreground max-w-lg text-sm">
           Le persone che frequentano i corsi con questo accesso: te stesso/a
           e/o i tuoi figli.
@@ -38,7 +38,7 @@ export default async function FigliPage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Il mio profilo</h2>
+        <h2 className="font-display text-xl uppercase tracking-tight">Il mio profilo</h2>
         {mioProfilo ? (
           <Card className="max-w-sm">
             <CardHeader>
@@ -84,7 +84,7 @@ export default async function FigliPage() {
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Figli</h2>
+          <h2 className="font-display text-xl uppercase tracking-tight">Figli</h2>
           <StudenteFormDialog
             titolo="Aggiungi figlio/a"
             onSubmit={creaFiglio}

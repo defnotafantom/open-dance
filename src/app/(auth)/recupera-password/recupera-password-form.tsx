@@ -22,7 +22,7 @@ export function RecuperaPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recupera password</CardTitle>
+        <CardTitle className="font-display text-2xl uppercase tracking-tight">Recupera password</CardTitle>
         <CardDescription>
           Inserisci la tua email: se l&apos;account esiste ti invieremo le
           istruzioni per reimpostare la password.

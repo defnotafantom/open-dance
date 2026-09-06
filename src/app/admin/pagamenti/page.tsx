@@ -22,7 +22,7 @@ export default async function PagamentiPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pagamenti</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Pagamenti</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"

@@ -12,7 +12,7 @@ export default async function StudentiPage() {
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Studenti</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Studenti</h1>
         <p className="text-destructive text-sm">Impossibile caricare gli studenti: {error.message}</p>
       </div>
     );
@@ -41,7 +41,7 @@ export default async function StudentiPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Studenti</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Studenti</h1>
       <p className="text-muted-foreground max-w-md text-sm">
         Gli studenti vengono creati da genitori e allievi maggiorenni nella
         propria area. Da qui puoi consultarli e, se necessario, rimuoverli.

@@ -38,7 +38,7 @@ export default async function ImpostazioniPage() {
   if (error || !impostazioni) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Impostazioni</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Impostazioni</h1>
         <p className="text-destructive text-sm">
           Impossibile caricare le impostazioni: {error?.message ?? "riga non trovata."}
         </p>
@@ -49,7 +49,7 @@ export default async function ImpostazioniPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Impostazioni</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Impostazioni</h1>
         <p className="text-muted-foreground max-w-lg text-sm">
           Dati anagrafici della scuola mostrati nel sito (comunicazioni, pagina
           di contatto, ecc). Modificabili solo da proprietari e webmaster.
@@ -59,7 +59,7 @@ export default async function ImpostazioniPage() {
 
       <div className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Richieste di cancellazione dati</h2>
+          <h2 className="font-display text-xl uppercase tracking-tight">Richieste di cancellazione dati</h2>
           <p className="text-muted-foreground max-w-lg text-sm">
             Completare una richiesta anonimizza i dati identificativi
             dell&apos;account e degli iscritti collegati e ne blocca

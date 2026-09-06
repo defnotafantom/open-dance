@@ -90,7 +90,7 @@ export default async function OrarioGenitorePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Orario dei corsi</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Orario dei corsi</h1>
       {error ? (
         <p className="text-destructive text-sm">
           Impossibile caricare l&apos;orario: {error.message}

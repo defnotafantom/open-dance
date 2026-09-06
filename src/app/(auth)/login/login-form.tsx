@@ -22,7 +22,7 @@ export function LoginForm({ registrato }: { registrato: boolean }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Accedi</CardTitle>
+        <CardTitle className="font-display text-2xl uppercase tracking-tight">Accedi</CardTitle>
         <CardDescription>
           Inserisci le tue credenziali per accedere a Open Dance.
         </CardDescription>

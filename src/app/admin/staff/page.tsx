@@ -7,7 +7,7 @@ export default async function StaffPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Staff</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Staff</h1>
       {isTitolare ? (
         <>
           <p className="text-muted-foreground max-w-md">

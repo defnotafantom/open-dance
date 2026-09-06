@@ -21,7 +21,7 @@ export function NuovaPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Imposta una nuova password</CardTitle>
+        <CardTitle className="font-display text-2xl uppercase tracking-tight">Imposta una nuova password</CardTitle>
         <CardDescription>Scegli la nuova password per il tuo account.</CardDescription>
       </CardHeader>
       <form action={action}>

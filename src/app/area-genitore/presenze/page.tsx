@@ -154,7 +154,7 @@ export default async function PresenzeGenitorePage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Presenze</h1>
+          <h1 className="font-display text-3xl uppercase tracking-tight">Presenze</h1>
           <p className="text-muted-foreground text-sm">
             Conferma se il tuo/la tua figlio/a ci sarà: aiuta l&apos;insegnante a
             prepararsi sapendo in anticipo quanti allievi aspettarsi.
@@ -164,7 +164,7 @@ export default async function PresenzeGenitorePage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Storico</h2>
+        <h2 className="font-display text-xl uppercase tracking-tight">Storico</h2>
         {error ? (
           <p className="text-destructive text-sm">
             Impossibile caricare le presenze: {error.message}

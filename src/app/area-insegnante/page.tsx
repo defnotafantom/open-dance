@@ -18,7 +18,7 @@ export default async function AreaInsegnantePage() {
   if (error) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Le mie classi</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Le mie classi</h1>
         <p className="text-destructive text-sm">Impossibile caricare le classi: {error.message}</p>
       </div>
     );
@@ -27,7 +27,7 @@ export default async function AreaInsegnantePage() {
   if (!classi || classi.length === 0) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Le mie classi</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Le mie classi</h1>
         <p className="text-muted-foreground text-sm">
           Non ti e&apos; ancora stata assegnata nessuna classe.
         </p>
@@ -58,7 +58,7 @@ export default async function AreaInsegnantePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Le mie classi</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Le mie classi</h1>
       <div className="grid gap-4 sm:grid-cols-2">
         {classi.map((classe) => {
           const allievi = (iscrizioni ?? [])

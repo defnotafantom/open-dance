@@ -13,7 +13,7 @@ export default async function CorsiPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Corsi</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Corsi</h1>
         <CorsoFormDialog trigger={<Button>Nuovo corso</Button>} />
       </div>
       {error ? (

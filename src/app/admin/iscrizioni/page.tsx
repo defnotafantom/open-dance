@@ -16,7 +16,7 @@ export default async function IscrizioniPage() {
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Iscrizioni</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Iscrizioni</h1>
         <p className="text-destructive text-sm">Impossibile caricare le richieste: {error.message}</p>
       </div>
     );
@@ -76,7 +76,7 @@ export default async function IscrizioniPage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
+          <h1 className="font-display text-3xl uppercase tracking-tight">Iscrizioni in attesa</h1>
           <Button
             size="sm"
             variant="outline"
@@ -88,7 +88,7 @@ export default async function IscrizioniPage() {
       </div>
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-lg font-semibold">Lista d&apos;attesa</h2>
+          <h2 className="font-display text-xl uppercase tracking-tight">Lista d&apos;attesa</h2>
           <p className="text-muted-foreground text-sm">
             Richieste arrivate quando la classe aveva gia&apos; raggiunto la capienza massima.
           </p>

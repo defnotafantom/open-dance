@@ -32,7 +32,7 @@ export default async function PagamentiGenitorePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Pagamenti</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Pagamenti</h1>
       {error ? (
         <p className="text-destructive text-sm">
           Impossibile caricare i pagamenti: {error.message}

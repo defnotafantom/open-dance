@@ -23,7 +23,7 @@ export function RegistratiForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Crea un account</CardTitle>
+        <CardTitle className="font-display text-2xl uppercase tracking-tight">Crea un account</CardTitle>
         <CardDescription>
           Inserisci i tuoi dati di contatto: dopo la registrazione potrai
           aggiungere chi si iscrive ai corsi (te stesso/a e/o i tuoi figli).

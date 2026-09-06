@@ -44,7 +44,7 @@ export default async function CorsoDettaglioPage({
           ← Tutti i corsi
         </Link>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{corso.nome}</h1>
+          <h1 className="font-display text-3xl uppercase tracking-tight">{corso.nome}</h1>
           <ClasseFormDialog
             corsoId={corsoId}
             insegnanti={insegnanti}

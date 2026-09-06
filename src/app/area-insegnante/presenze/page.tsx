@@ -18,7 +18,7 @@ export default async function PresenzePage() {
   if (classiError) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Presenze</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Presenze</h1>
         <p className="text-destructive text-sm">
           Impossibile caricare le tue classi: {classiError.message}
         </p>
@@ -29,7 +29,7 @@ export default async function PresenzePage() {
   if (!classi || classi.length === 0) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Presenze</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Presenze</h1>
         <p className="text-muted-foreground text-sm">
           Non ti e&apos; ancora stata assegnata nessuna classe.
         </p>
@@ -108,7 +108,7 @@ export default async function PresenzePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Presenze</h1>
+      <h1 className="font-display text-3xl uppercase tracking-tight">Presenze</h1>
       {error ? (
         <p className="text-destructive text-sm">
           Impossibile caricare le lezioni: {error.message}

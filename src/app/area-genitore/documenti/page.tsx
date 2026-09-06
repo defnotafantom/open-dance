@@ -23,7 +23,7 @@ export default async function DocumentiGenitorePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Documenti</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Documenti</h1>
         {figliList.length > 0 && (
           <DocumentoUploadDialog studenti={figliList} trigger={<Button>Carica documento</Button>} />
         )}

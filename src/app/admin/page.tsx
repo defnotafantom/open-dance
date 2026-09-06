@@ -140,7 +140,7 @@ export default async function AdminPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Panoramica</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Panoramica</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (
             <Card key={s.titolo}>
@@ -149,7 +149,7 @@ export default async function AdminPage() {
                   {s.titolo}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-2xl font-semibold">{s.valore}</CardContent>
+              <CardContent className="font-display text-3xl text-primary">{s.valore}</CardContent>
             </Card>
           ))}
         </div>
