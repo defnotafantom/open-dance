@@ -15,7 +15,10 @@ function profiloBypassSviluppo() {
     return null;
   }
   return {
-    id: "dev-bypass",
+    // UUID nullo, sintatticamente valido: le query reali su Supabase non
+    // vanno in errore (nessuna riga corrisponde, semplicemente vuoto) invece
+    // di rompersi con "invalid input syntax for type uuid".
+    id: "00000000-0000-0000-0000-000000000000",
     nome: "Anteprima",
     cognome: ruolo,
     email: "anteprima@dev.local",
@@ -26,7 +29,7 @@ function profiloBypassSviluppo() {
 
 export const verifySession = cache(async () => {
   if (profiloBypassSviluppo()) {
-    return { userId: "dev-bypass" };
+    return { userId: "00000000-0000-0000-0000-000000000000" };
   }
 
   const supabase = await createClient();

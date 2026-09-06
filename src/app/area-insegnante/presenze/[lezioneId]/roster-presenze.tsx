@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { segnaPresenza, type StatoPresenza } from "@/lib/presenze/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -10,6 +11,7 @@ export type AllievoConPresenza = {
   nome: string;
   cognome: string;
   stato: StatoPresenza | null;
+  verra: boolean | null;
 };
 
 const OPZIONI: { value: StatoPresenza; label: string }[] = [
@@ -17,6 +19,12 @@ const OPZIONI: { value: StatoPresenza; label: string }[] = [
   { value: "assente", label: "Assente" },
   { value: "giustificato", label: "Giustificato" },
 ];
+
+function BadgeConferma({ verra }: { verra: boolean | null }) {
+  if (verra === true) return <Badge variant="secondary">Ha confermato</Badge>;
+  if (verra === false) return <Badge variant="destructive">Non verrà</Badge>;
+  return <Badge variant="outline">Nessuna risposta</Badge>;
+}
 
 export function RosterPresenze({
   lezioneId,
@@ -47,13 +55,13 @@ export function RosterPresenze({
   return (
     <ul className="flex flex-col gap-3">
       {allievi.map((allievo) => (
-        <li
-          key={allievo.id}
-          className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <span className="font-medium">
-            {allievo.nome} {allievo.cognome}
-          </span>
+        <li key={allievo.id} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-medium">
+              {allievo.nome} {allievo.cognome}
+            </span>
+            <BadgeConferma verra={allievo.verra} />
+          </div>
           <div className="flex gap-2">
             {OPZIONI.map((opzione) => (
               <Button

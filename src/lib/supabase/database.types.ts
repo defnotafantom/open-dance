@@ -233,6 +233,22 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["documenti"]["Row"]>;
         Relationships: [];
       };
+      conferme_presenza: {
+        Row: {
+          id: string;
+          lezione_id: string;
+          studente_id: string;
+          verra: boolean;
+          confermato_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["conferme_presenza"]["Row"]> & {
+          lezione_id: string;
+          studente_id: string;
+          verra: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["conferme_presenza"]["Row"]>;
+        Relationships: [];
+      };
       consensi_privacy: {
         Row: {
           id: string;

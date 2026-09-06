@@ -201,7 +201,7 @@ stable
 as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and ruolo in ('admin', 'staff')
+    where profiles.id = auth.uid() and profiles.ruolo in ('admin', 'staff')
   );
 $$;
 
@@ -212,8 +212,8 @@ security definer
 set search_path = public
 stable
 as $$
-  select id from public.studenti
-  where genitore_id = auth.uid() or profilo_id = auth.uid();
+  select studenti.id from public.studenti
+  where studenti.genitore_id = auth.uid() or studenti.profilo_id = auth.uid();
 $$;
 
 create function public.my_classi_ids()
@@ -223,7 +223,7 @@ security definer
 set search_path = public
 stable
 as $$
-  select id from public.classi where insegnante_id = auth.uid();
+  select classi.id from public.classi where classi.insegnante_id = auth.uid();
 $$;
 
 create function public.can_see_comunicazione(comm_id uuid)
@@ -243,16 +243,16 @@ as $$
           select 1 from public.comunicazioni_target t
           where t.comunicazione_id = comm_id
           and (
-            t.ruolo = (select ruolo from public.profiles where id = auth.uid())
-            or t.classe_id in (select id from public.my_classi_ids())
+            t.ruolo = (select profiles.ruolo from public.profiles where profiles.id = auth.uid())
+            or t.classe_id in (select * from public.my_classi_ids())
             or t.classe_id in (
               select i.classe_id from public.iscrizioni i
-              where i.studente_id in (select id from public.my_studenti_ids()) and i.stato = 'attiva'
+              where i.studente_id in (select * from public.my_studenti_ids()) and i.stato = 'attiva'
             )
             or t.corso_id in (
               select cl.corso_id from public.classi cl
               join public.iscrizioni i on i.classe_id = cl.id
-              where i.studente_id in (select id from public.my_studenti_ids()) and i.stato = 'attiva'
+              where i.studente_id in (select * from public.my_studenti_ids()) and i.stato = 'attiva'
             )
           )
         )
@@ -345,7 +345,7 @@ create policy studenti_select on public.studenti for select
     or profilo_id = auth.uid()
     or id in (
       select i.studente_id from public.iscrizioni i
-      where i.stato = 'attiva' and i.classe_id in (select id from public.my_classi_ids())
+      where i.stato = 'attiva' and i.classe_id in (select * from public.my_classi_ids())
     )
   );
 create policy studenti_insert on public.studenti for insert
@@ -373,46 +373,46 @@ create policy classi_modifica on public.classi for all
 create policy lezioni_select on public.lezioni for select using (true);
 create policy lezioni_insert on public.lezioni for insert with check (public.is_staff());
 create policy lezioni_update on public.lezioni for update
-  using (public.is_staff() or classe_id in (select id from public.my_classi_ids()));
+  using (public.is_staff() or classe_id in (select * from public.my_classi_ids()));
 create policy lezioni_delete on public.lezioni for delete using (public.is_staff());
 
 -- iscrizioni
 create policy iscrizioni_select on public.iscrizioni for select
   using (
     public.is_staff()
-    or studente_id in (select id from public.my_studenti_ids())
-    or classe_id in (select id from public.my_classi_ids())
+    or studente_id in (select * from public.my_studenti_ids())
+    or classe_id in (select * from public.my_classi_ids())
   );
 create policy iscrizioni_insert on public.iscrizioni for insert
-  with check (public.is_staff() or studente_id in (select id from public.my_studenti_ids()));
+  with check (public.is_staff() or studente_id in (select * from public.my_studenti_ids()));
 create policy iscrizioni_update on public.iscrizioni for update
   using (public.is_staff());
 create policy iscrizioni_delete on public.iscrizioni for delete
   using (
     public.is_staff()
-    or (studente_id in (select id from public.my_studenti_ids()) and stato = 'richiesta')
+    or (studente_id in (select * from public.my_studenti_ids()) and stato = 'richiesta')
   );
 
 -- presenze
 create policy presenze_select on public.presenze for select
   using (
     public.is_staff()
-    or studente_id in (select id from public.my_studenti_ids())
-    or lezione_id in (select id from public.lezioni where classe_id in (select id from public.my_classi_ids()))
+    or studente_id in (select * from public.my_studenti_ids())
+    or lezione_id in (select id from public.lezioni where classe_id in (select * from public.my_classi_ids()))
   );
 create policy presenze_modifica on public.presenze for all
   using (
     public.is_staff()
-    or lezione_id in (select id from public.lezioni where classe_id in (select id from public.my_classi_ids()))
+    or lezione_id in (select id from public.lezioni where classe_id in (select * from public.my_classi_ids()))
   )
   with check (
     public.is_staff()
-    or lezione_id in (select id from public.lezioni where classe_id in (select id from public.my_classi_ids()))
+    or lezione_id in (select id from public.lezioni where classe_id in (select * from public.my_classi_ids()))
   );
 
 -- pagamenti: nessun accesso per gli insegnanti (nessuna policy dedicata).
 create policy pagamenti_select on public.pagamenti for select
-  using (public.is_staff() or studente_id in (select id from public.my_studenti_ids()));
+  using (public.is_staff() or studente_id in (select * from public.my_studenti_ids()));
 create policy pagamenti_modifica on public.pagamenti for all
   using (public.is_staff()) with check (public.is_staff());
 
@@ -422,7 +422,7 @@ create policy comunicazioni_select on public.comunicazioni for select
 create policy comunicazioni_insert on public.comunicazioni for insert
   with check (
     autore_id = auth.uid()
-    and (public.is_staff() or exists (select 1 from public.profiles where id = auth.uid() and ruolo = 'insegnante'))
+    and (public.is_staff() or exists (select 1 from public.profiles where profiles.id = auth.uid() and profiles.ruolo = 'insegnante'))
   );
 create policy comunicazioni_update on public.comunicazioni for update
   using (public.is_staff() or autore_id = auth.uid());
@@ -434,12 +434,12 @@ create policy comunicazioni_target_select on public.comunicazioni_target for sel
 create policy comunicazioni_target_insert on public.comunicazioni_target for insert
   with check (
     public.is_staff()
-    or classe_id in (select id from public.my_classi_ids())
+    or classe_id in (select * from public.my_classi_ids())
   );
 create policy comunicazioni_target_delete on public.comunicazioni_target for delete
   using (
     public.is_staff()
-    or classe_id in (select id from public.my_classi_ids())
+    or classe_id in (select * from public.my_classi_ids())
   );
 
 -- letture_comunicazioni: ognuno segna/legge le proprie ricevute, lo staff vede tutte.
@@ -456,10 +456,10 @@ create policy push_modifica on public.push_subscriptions for all
 
 -- documenti: staff completo, genitore/allievo solo i propri, insegnanti esclusi.
 create policy documenti_select on public.documenti for select
-  using (public.is_staff() or studente_id in (select id from public.my_studenti_ids()));
+  using (public.is_staff() or studente_id in (select * from public.my_studenti_ids()));
 create policy documenti_modifica on public.documenti for all
-  using (public.is_staff() or studente_id in (select id from public.my_studenti_ids()))
-  with check (public.is_staff() or studente_id in (select id from public.my_studenti_ids()));
+  using (public.is_staff() or studente_id in (select * from public.my_studenti_ids()))
+  with check (public.is_staff() or studente_id in (select * from public.my_studenti_ids()));
 
 -- consensi_privacy
 create policy consensi_select on public.consensi_privacy for select

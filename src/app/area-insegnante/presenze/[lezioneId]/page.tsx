@@ -39,15 +39,17 @@ export default async function PresenzeLezionePage({
     );
   }
 
-  const [{ data: corso }, { data: iscrizioni }, { data: presenze }] = await Promise.all([
-    supabase.from("corsi").select("nome").eq("id", classe.corso_id).single(),
-    supabase
-      .from("iscrizioni")
-      .select("studente_id")
-      .eq("classe_id", classe.id)
-      .eq("stato", "attiva"),
-    supabase.from("presenze").select("studente_id, stato").eq("lezione_id", lezioneId),
-  ]);
+  const [{ data: corso }, { data: iscrizioni }, { data: presenze }, { data: conferme }] =
+    await Promise.all([
+      supabase.from("corsi").select("nome").eq("id", classe.corso_id).single(),
+      supabase
+        .from("iscrizioni")
+        .select("studente_id")
+        .eq("classe_id", classe.id)
+        .eq("stato", "attiva"),
+      supabase.from("presenze").select("studente_id, stato").eq("lezione_id", lezioneId),
+      supabase.from("conferme_presenza").select("studente_id, verra").eq("lezione_id", lezioneId),
+    ]);
 
   const studenteIds = (iscrizioni ?? []).map((i) => i.studente_id);
   const { data: studenti } =
@@ -56,12 +58,14 @@ export default async function PresenzeLezionePage({
       : { data: [] as { id: string; nome: string; cognome: string }[] };
 
   const statoByStudente = new Map((presenze ?? []).map((p) => [p.studente_id, p.stato]));
+  const confermaByStudente = new Map((conferme ?? []).map((c) => [c.studente_id, c.verra]));
 
   const allievi: AllievoConPresenza[] = (studenti ?? []).map((s) => ({
     id: s.id,
     nome: s.nome,
     cognome: s.cognome,
     stato: statoByStudente.get(s.id) ?? null,
+    verra: confermaByStudente.get(s.id) ?? null,
   }));
 
   return (

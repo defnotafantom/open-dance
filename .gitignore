@@ -43,6 +43,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# file di lavoro temporanei (es. bozze di artifact), non codice dell'app
+/scratch
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
