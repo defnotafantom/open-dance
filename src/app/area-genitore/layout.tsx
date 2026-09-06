@@ -10,6 +10,7 @@ const NAV: NavItem[] = [
   { href: "/area-genitore/documenti", label: "Documenti" },
   { href: "/area-genitore/eventi", label: "Eventi" },
   { href: "/area-genitore/comunicazioni", label: "Comunicazioni" },
+  { href: "/area-genitore/privacy", label: "Privacy" },
 ];
 
 export default async function AreaGenitoreLayout({

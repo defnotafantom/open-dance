@@ -30,6 +30,7 @@ export type PagamentoTipoEnum = "quota_corso" | "iscrizione_annuale" | "saggio" 
 export type PagamentoMetodoEnum = "contanti" | "bonifico" | "pos" | "altro";
 export type PagamentoStatoEnum = "da_pagare" | "parziale" | "pagato" | "scaduto";
 export type ConsensoTipoEnum = "trattamento_dati" | "foto_video" | "newsletter";
+export type RichiestaCancellazioneStatoEnum = "in_attesa" | "completata" | "annullata";
 
 export interface Database {
   public: {
@@ -301,6 +302,36 @@ export interface Database {
         };
         Insert: Partial<Database["public"]["Tables"]["eventi"]["Row"]> & { nome: string; data: string };
         Update: Partial<Database["public"]["Tables"]["eventi"]["Row"]>;
+        Relationships: [];
+      };
+      impostazioni_scuola: {
+        Row: {
+          id: number;
+          nome_scuola: string;
+          anno_fondazione: number | null;
+          indirizzo: string | null;
+          telefono: string | null;
+          email_contatto: string | null;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["impostazioni_scuola"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["impostazioni_scuola"]["Row"]>;
+        Relationships: [];
+      };
+      richieste_cancellazione: {
+        Row: {
+          id: string;
+          profilo_id: string;
+          stato: RichiestaCancellazioneStatoEnum;
+          richiesto_at: string;
+          gestito_da: string | null;
+          gestito_at: string | null;
+          note: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["richieste_cancellazione"]["Row"]> & {
+          profilo_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["richieste_cancellazione"]["Row"]>;
         Relationships: [];
       };
     };

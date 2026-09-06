@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { GIORNI_SETTIMANA } from "@/lib/corsi/schemas";
+import { Button } from "@/components/ui/button";
 import { IscrizioniTable, type RichiestaIscrizione } from "./iscrizioni-table";
 
 export default async function IscrizioniPage() {
@@ -73,7 +75,15 @@ export default async function IscrizioniPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold">Iscrizioni in attesa</h1>
+          <Button
+            size="sm"
+            variant="outline"
+            nativeButton={false}
+            render={<Link href="/admin/iscrizioni/nuova">+ Nuova iscrizione manuale</Link>}
+          />
+        </div>
         <IscrizioniTable richieste={aRighe("richiesta")} />
       </div>
       <div className="flex flex-col gap-4">
