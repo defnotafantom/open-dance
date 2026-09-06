@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResult = { error?: string };
@@ -12,7 +12,7 @@ export async function segnaPresenza(
   studenteId: string,
   stato: StatoPresenza
 ): Promise<ActionResult> {
-  const profile = await requireRuolo(["admin", "staff", "insegnante"]);
+  const profile = await requireRuolo([...RUOLI_STAFF, "insegnante"]);
   const supabase = await createClient();
 
   const { error } = await supabase.from("presenze").upsert(

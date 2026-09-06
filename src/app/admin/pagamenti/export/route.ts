@@ -1,4 +1,4 @@
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { TIPO_LABEL, METODO_LABEL } from "@/lib/pagamenti/schemas";
 
@@ -12,7 +12,7 @@ function escapeCsv(value: string) {
 // Export di supporto per il commercialista della scuola: NON e' un documento
 // fiscale (ricevuta/fattura). Confermare con il commercialista se e' sufficiente.
 export async function GET() {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
 
   const supabase = await createClient();
   const { data: pagamenti, error } = await supabase

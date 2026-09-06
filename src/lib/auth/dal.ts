@@ -2,13 +2,16 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { RuoloEnum } from "@/lib/supabase/database.types";
+import { RUOLI_STAFF, RUOLI_TITOLARI, type RuoloEnum } from "@/lib/supabase/database.types";
+
+export { RUOLI_STAFF, RUOLI_TITOLARI };
 
 // Bypass TEMPORANEO per vedere le aree protette senza un progetto Supabase
 // reale. Attivo solo fuori produzione: impostare NEXT_PUBLIC_DEV_BYPASS_ROLE
-// in .env.local (es. "admin", "insegnante", "genitore") e riavviare `npm run
-// dev`. Da rimuovere (questa funzione + i due controlli che la usano) non
-// appena e' collegato un progetto Supabase vero.
+// in .env.local (es. "webmaster", "proprietario", "co_proprietario",
+// "segretario", "insegnante", "allievo") e riavviare `npm run dev`. Da
+// rimuovere (questa funzione + i due controlli che la usano) non appena e'
+// collegato un progetto Supabase vero.
 function profiloBypassSviluppo() {
   const ruolo = process.env.NEXT_PUBLIC_DEV_BYPASS_ROLE as RuoloEnum | undefined;
   if (process.env.NODE_ENV === "production" || !ruolo) {
@@ -96,8 +99,39 @@ export async function requireRuolo(ruoliConsentiti: RuoloEnum[]) {
   return profile;
 }
 
+/**
+ * Come requireRuolo(["insegnante"]), ma lascia passare anche chi non ha
+ * quel ruolo "ufficiale" ma insegna comunque almeno una classe (es. una
+ * titolare che fa anche lezione) — cosi' puo' usare l'appello/presenze
+ * senza dover essere etichettata come insegnante.
+ */
+export async function requireAreaInsegnante() {
+  const profile = await getProfile();
+  if (profile.ruolo === "insegnante") {
+    return profile;
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("classi")
+    .select("id")
+    .eq("insegnante_id", profile.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) {
+    redirect("/");
+  }
+
+  return profile;
+}
+
 export function areaPerRuolo(ruolo: RuoloEnum) {
   switch (ruolo) {
+    case "webmaster":
+    case "proprietario":
+    case "co_proprietario":
+    case "segretario":
     case "admin":
     case "staff":
       return "/admin";

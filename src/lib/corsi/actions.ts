@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { corsoSchema, classeSchema, type CorsoInput, type ClasseInput } from "@/lib/corsi/schemas";
 
 export type ActionResult = { error?: string } | { error?: undefined };
 
 export async function creaCorso(input: CorsoInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = corsoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati del corso non validi." };
@@ -25,7 +25,7 @@ export async function creaCorso(input: CorsoInput): Promise<ActionResult> {
 }
 
 export async function aggiornaCorso(id: string, input: CorsoInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = corsoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati del corso non validi." };
@@ -43,7 +43,7 @@ export async function aggiornaCorso(id: string, input: CorsoInput): Promise<Acti
 }
 
 export async function eliminaCorso(id: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("corsi").delete().eq("id", id);
   if (error) {
@@ -55,7 +55,7 @@ export async function eliminaCorso(id: string): Promise<ActionResult> {
 }
 
 export async function creaClasse(input: ClasseInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = classeSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati della classe non validi." };
@@ -73,7 +73,7 @@ export async function creaClasse(input: ClasseInput): Promise<ActionResult> {
 }
 
 export async function aggiornaClasse(id: string, input: ClasseInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = classeSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati della classe non validi." };
@@ -91,7 +91,7 @@ export async function aggiornaClasse(id: string, input: ClasseInput): Promise<Ac
 }
 
 export async function eliminaClasse(id: string, corsoId: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("classi").delete().eq("id", id);
   if (error) {

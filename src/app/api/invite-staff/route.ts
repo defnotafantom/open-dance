@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
 import * as z from "zod";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_TITOLARI } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const inviteSchema = z.object({
   email: z.email(),
   nome: z.string().min(1),
   cognome: z.string().min(1),
-  ruolo: z.enum(["staff", "insegnante"]),
+  ruolo: z.enum(["proprietario", "co_proprietario", "segretario", "insegnante"]),
 });
 
-// Solo un admin puo' invitare staff/insegnanti: crea l'utente via service-role
-// key (mai esposta al client) e imposta il ruolo con un update separato,
-// perche' il trigger di creazione profilo forza sempre genitore/allievo_adulto.
+// Solo un titolare (webmaster/proprietario/co-proprietario) puo' invitare
+// personale: crea l'utente via service-role key (mai esposta al client) e
+// imposta il ruolo con un update separato, perche' il trigger di creazione
+// profilo forza sempre il ruolo 'allievo'.
 export async function POST(request: Request) {
-  await requireRuolo(["admin"]);
+  await requireRuolo(RUOLI_TITOLARI);
 
   const body = await request.json().catch(() => null);
   const parsed = inviteSchema.safeParse(body);

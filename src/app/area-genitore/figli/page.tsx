@@ -1,45 +1,71 @@
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { creaFiglio, attivaProfiloAllievoAdulto } from "@/lib/studenti/actions";
+import { creaFiglio, iscriviTeStesso } from "@/lib/studenti/actions";
 import { FigliList } from "./figli-list";
 import { StudenteFormDialog } from "@/components/studenti/studente-form-dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function FigliPage() {
   const profile = await getProfile();
   const supabase = await createClient();
 
-  if (profile.ruolo === "allievo_adulto") {
-    const { data: mioStudente } = await supabase
-      .from("studenti")
-      .select("id, nome, cognome, data_nascita, codice_fiscale")
-      .eq("profilo_id", profile.id)
-      .maybeSingle();
+  const { data: iscritti, error } = await supabase
+    .from("studenti")
+    .select("id, nome, cognome, data_nascita, codice_fiscale, genitore_id, profilo_id")
+    .order("data_nascita");
 
+  if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">Il mio profilo studente</h1>
-        {mioStudente ? (
-          <div className="flex flex-col gap-3">
-            <p className="text-muted-foreground">
-              {mioStudente.nome} {mioStudente.cognome} — nato/a il{" "}
-              {new Date(mioStudente.data_nascita).toLocaleDateString("it-IT")}
-            </p>
-            <StudenteFormDialog
-              studente={{ ...mioStudente, codice_fiscale: mioStudente.codice_fiscale ?? "" }}
-              titolo="Modifica i tuoi dati"
-              onSubmit={attivaProfiloAllievoAdulto}
-              trigger={
-                <Button variant="outline" className="w-fit">
-                  Modifica i miei dati
-                </Button>
-              }
-            />
-          </div>
+        <h1 className="text-2xl font-semibold">Iscritti</h1>
+        <p className="text-destructive text-sm">Impossibile caricare i dati: {error.message}</p>
+      </div>
+    );
+  }
+
+  const mioProfilo = (iscritti ?? []).find((s) => s.profilo_id === profile.id);
+  const figli = (iscritti ?? []).filter((s) => s.genitore_id === profile.id);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-2xl font-semibold">Iscritti</h1>
+        <p className="text-muted-foreground max-w-lg text-sm">
+          Le persone che frequentano i corsi con questo accesso: te stesso/a
+          e/o i tuoi figli.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold">Il mio profilo</h2>
+        {mioProfilo ? (
+          <Card className="max-w-sm">
+            <CardHeader>
+              <CardTitle className="text-base">
+                {mioProfilo.nome} {mioProfilo.cognome}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <p className="text-muted-foreground text-sm">
+                Nato/a il {new Date(mioProfilo.data_nascita).toLocaleDateString("it-IT")}
+              </p>
+              <StudenteFormDialog
+                studente={{ ...mioProfilo, codice_fiscale: mioProfilo.codice_fiscale ?? "" }}
+                titolo="Modifica i miei dati"
+                onSubmit={iscriviTeStesso}
+                trigger={
+                  <Button variant="outline" size="sm" className="w-fit">
+                    Modifica
+                  </Button>
+                }
+              />
+            </CardContent>
+          </Card>
         ) : (
           <div className="flex flex-col gap-3">
-            <p className="text-muted-foreground max-w-md">
-              Completa i tuoi dati per poter richiedere l&apos;iscrizione ai corsi.
+            <p className="text-muted-foreground text-sm">
+              Se frequenti tu stesso/a un corso, aggiungiti come iscritto/a.
             </p>
             <StudenteFormDialog
               studente={{
@@ -48,41 +74,27 @@ export default async function FigliPage() {
                 data_nascita: "",
                 codice_fiscale: "",
               }}
-              titolo="Completa il tuo profilo"
-              onSubmit={attivaProfiloAllievoAdulto}
-              trigger={<Button className="w-fit">Completa profilo</Button>}
+              titolo="Iscrivi te stesso/a"
+              onSubmit={iscriviTeStesso}
+              trigger={<Button className="w-fit">Iscrivi te stesso/a</Button>}
             />
           </div>
         )}
       </div>
-    );
-  }
 
-  const { data: figli, error } = await supabase
-    .from("studenti")
-    .select("id, nome, cognome, data_nascita, codice_fiscale")
-    .eq("genitore_id", profile.id)
-    .order("data_nascita");
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">I miei figli</h1>
-        <StudenteFormDialog
-          titolo="Aggiungi figlio"
-          onSubmit={creaFiglio}
-          trigger={<Button>Aggiungi figlio</Button>}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Figli</h2>
+          <StudenteFormDialog
+            titolo="Aggiungi figlio/a"
+            onSubmit={creaFiglio}
+            trigger={<Button>Aggiungi figlio/a</Button>}
+          />
+        </div>
+        <FigliList
+          figli={figli.map((f) => ({ ...f, codice_fiscale: f.codice_fiscale ?? "" }))}
         />
       </div>
-      {error ? (
-        <p className="text-destructive text-sm">
-          Impossibile caricare i dati: {error.message}
-        </p>
-      ) : (
-        <FigliList
-          figli={(figli ?? []).map((f) => ({ ...f, codice_fiscale: f.codice_fiscale ?? "" }))}
-        />
-      )}
     </div>
   );
 }

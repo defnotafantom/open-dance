@@ -3,7 +3,7 @@ import { AppShell, type NavItem } from "@/components/layout/app-shell";
 
 const NAV: NavItem[] = [
   { href: "/area-genitore", label: "Panoramica" },
-  { href: "/area-genitore/figli", label: "I miei figli" },
+  { href: "/area-genitore/figli", label: "Iscritti" },
   { href: "/area-genitore/orario", label: "Orario" },
   { href: "/area-genitore/pagamenti", label: "Pagamenti" },
   { href: "/area-genitore/presenze", label: "Presenze" },
@@ -17,7 +17,7 @@ export default async function AreaGenitoreLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await requireRuolo(["genitore", "allievo_adulto"]);
+  const profile = await requireRuolo(["allievo"]);
 
   return (
     <AppShell title="Area famiglia" nav={NAV} profile={profile}>

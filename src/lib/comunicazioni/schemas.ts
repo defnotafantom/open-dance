@@ -4,7 +4,14 @@ export const targetSchema = z.discriminatedUnion("tipo", [
   z.object({ tipo: z.literal("tutti") }),
   z.object({
     tipo: z.literal("ruolo"),
-    ruolo: z.enum(["admin", "staff", "insegnante", "genitore", "allievo_adulto"]),
+    ruolo: z.enum([
+      "webmaster",
+      "proprietario",
+      "co_proprietario",
+      "segretario",
+      "insegnante",
+      "allievo",
+    ]),
   }),
   z.object({ tipo: z.literal("corso"), corso_id: z.uuid() }),
   z.object({ tipo: z.literal("classe"), classe_id: z.uuid() }),

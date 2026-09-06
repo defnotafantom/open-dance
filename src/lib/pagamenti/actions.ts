@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { pagamentoSchema, calcolaStato, type PagamentoInput } from "@/lib/pagamenti/schemas";
 
 export type ActionResult = { error?: string };
 
 export async function registraPagamento(input: PagamentoInput): Promise<ActionResult> {
-  const profile = await requireRuolo(["admin", "staff"]);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = pagamentoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati del pagamento non validi." };
@@ -31,7 +31,7 @@ export async function registraPagamento(input: PagamentoInput): Promise<ActionRe
 }
 
 export async function aggiornaPagamento(id: string, input: PagamentoInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = pagamentoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati del pagamento non validi." };
@@ -53,7 +53,7 @@ export async function aggiornaPagamento(id: string, input: PagamentoInput): Prom
 }
 
 export async function eliminaPagamento(id: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("pagamenti").delete().eq("id", id);
 

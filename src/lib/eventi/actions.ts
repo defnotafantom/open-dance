@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { eventoSchema, type EventoInput } from "@/lib/eventi/schemas";
 
 export type ActionResult = { error?: string };
 
 export async function creaEvento(input: EventoInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = eventoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati dell'evento non validi." };
@@ -27,7 +27,7 @@ export async function creaEvento(input: EventoInput): Promise<ActionResult> {
 }
 
 export async function aggiornaEvento(id: string, input: EventoInput): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const parsed = eventoSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Dati dell'evento non validi." };
@@ -46,7 +46,7 @@ export async function aggiornaEvento(id: string, input: EventoInput): Promise<Ac
 }
 
 export async function eliminaEvento(id: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("eventi").delete().eq("id", id);
   if (error) {

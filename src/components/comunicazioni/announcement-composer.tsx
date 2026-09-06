@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/select";
 
 const RUOLO_LABEL: Record<string, string> = {
-  admin: "Amministratori",
-  staff: "Staff",
+  proprietario: "Proprietari",
+  co_proprietario: "Co-proprietari",
+  segretario: "Segreteria",
   insegnante: "Insegnanti",
-  genitore: "Genitori",
-  allievo_adulto: "Allievi maggiorenni",
+  allievo: "Allievi e famiglie",
 };
 
 export type DestinatarioTipo = "tutti" | "ruolo" | "corso" | "classe";
@@ -42,7 +42,7 @@ export function AnnouncementComposer({
   const [tipoDestinatario, setTipoDestinatario] = useState<DestinatarioTipo>(
     tipiDestinatarioConsentiti[0]
   );
-  const [ruoloTarget, setRuoloTarget] = useState("genitore");
+  const [ruoloTarget, setRuoloTarget] = useState("allievo");
   const [corsoTarget, setCorsoTarget] = useState(corsi[0]?.id ?? "");
   const [classeTarget, setClasseTarget] = useState(classi[0]?.id ?? "");
   const [pending, setPending] = useState(false);
@@ -60,7 +60,13 @@ export function AnnouncementComposer({
     } else if (tipoDestinatario === "ruolo") {
       target = {
         tipo: "ruolo",
-        ruolo: ruoloTarget as "admin" | "staff" | "insegnante" | "genitore" | "allievo_adulto",
+        ruolo: ruoloTarget as
+          | "webmaster"
+          | "proprietario"
+          | "co_proprietario"
+          | "segretario"
+          | "insegnante"
+          | "allievo",
       };
     } else if (tipoDestinatario === "corso") {
       if (!corsoTarget) {
@@ -139,9 +145,9 @@ export function AnnouncementComposer({
           </Select>
         </div>
         {tipoDestinatario === "ruolo" && (
-          <Select value={ruoloTarget} onValueChange={(v) => setRuoloTarget(v ?? "genitore")}>
+          <Select value={ruoloTarget} onValueChange={(v) => setRuoloTarget(v ?? "allievo")}>
             <SelectTrigger className="w-full">
-              <SelectValue>{(v: string | null) => RUOLO_LABEL[v ?? "genitore"]}</SelectValue>
+              <SelectValue>{(v: string | null) => RUOLO_LABEL[v ?? "allievo"]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Object.entries(RUOLO_LABEL).map(([value, label]) => (

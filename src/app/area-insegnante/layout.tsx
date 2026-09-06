@@ -1,4 +1,4 @@
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireAreaInsegnante } from "@/lib/auth/dal";
 import { AppShell, type NavItem } from "@/components/layout/app-shell";
 
 const NAV: NavItem[] = [
@@ -13,7 +13,7 @@ export default async function AreaInsegnanteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await requireRuolo(["insegnante"]);
+  const profile = await requireAreaInsegnante();
 
   return (
     <AppShell title="Area insegnante" nav={NAV} profile={profile}>

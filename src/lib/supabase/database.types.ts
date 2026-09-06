@@ -2,7 +2,22 @@
 // Quando il progetto Supabase reale esiste, rigenerare con:
 //   npx supabase gen types typescript --project-id <id> > src/lib/supabase/database.types.ts
 
-export type RuoloEnum = "admin" | "staff" | "insegnante" | "genitore" | "allievo_adulto";
+export type RuoloEnum =
+  | "webmaster"
+  | "proprietario"
+  | "co_proprietario"
+  | "segretario"
+  | "insegnante"
+  | "allievo"
+  // valori storici: non piu' assegnati a nuovi profili, restano solo per
+  // compatibilita' con l'enum Postgres (che non permette di rimuovere valori).
+  | "admin"
+  | "staff"
+  | "genitore"
+  | "allievo_adulto";
+
+export const RUOLI_TITOLARI: RuoloEnum[] = ["webmaster", "proprietario", "co_proprietario"];
+export const RUOLI_STAFF: RuoloEnum[] = [...RUOLI_TITOLARI, "segretario"];
 export type IscrizioneStatoEnum =
   | "richiesta"
   | "attiva"

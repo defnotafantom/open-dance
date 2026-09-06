@@ -1,4 +1,3 @@
-import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { GIORNI_SETTIMANA } from "@/lib/corsi/schemas";
 import { WeeklySchedule, type ClasseOrario } from "@/components/schedule/weekly-schedule";
@@ -7,7 +6,6 @@ import { RinnoviDisponibili, type RinnovoDisponibile } from "./rinnovi-disponibi
 import { Button } from "@/components/ui/button";
 
 export default async function OrarioGenitorePage() {
-  const profile = await getProfile();
   const supabase = await createClient();
 
   const [{ data: classi, error }, { data: corsi }, { data: insegnanti }, { data: figli }] =
@@ -99,9 +97,8 @@ export default async function OrarioGenitorePage() {
         </p>
       ) : (figli ?? []).length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          {profile.ruolo === "allievo_adulto"
-            ? "Completa prima il tuo profilo nella sezione dedicata per poter richiedere un'iscrizione."
-            : "Aggiungi prima un figlio nella sezione \"I miei figli\" per poter richiedere un'iscrizione."}
+          Aggiungi prima almeno un iscritto/a nella sezione &quot;Iscritti&quot;
+          per poter richiedere un&apos;iscrizione.
         </p>
       ) : (
         <>

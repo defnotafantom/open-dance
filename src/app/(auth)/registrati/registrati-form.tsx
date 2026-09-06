@@ -16,13 +16,6 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export function RegistratiForm() {
   const [state, action, pending] = useActionState(registrati, undefined);
@@ -32,8 +25,9 @@ export function RegistratiForm() {
       <CardHeader>
         <CardTitle>Crea un account</CardTitle>
         <CardDescription>
-          Per genitori e allievi maggiorenni. Lo staff riceve un invito
-          separato dalla segreteria.
+          Inserisci i tuoi dati di contatto: dopo la registrazione potrai
+          aggiungere chi si iscrive ai corsi (te stesso/a e/o i tuoi figli).
+          Lo staff riceve un invito separato dalla segreteria.
         </CardDescription>
       </CardHeader>
       <form action={action}>
@@ -65,22 +59,6 @@ export function RegistratiForm() {
             {state?.fieldErrors?.email && (
               <p className="text-destructive text-sm">{state.fieldErrors.email[0]}</p>
             )}
-          </div>
-          <div className="grid gap-2">
-            <Label>Tipo di account</Label>
-            <Select name="tipo" defaultValue="genitore">
-              <SelectTrigger className="w-full">
-                <SelectValue>
-                  {(value: string | null) =>
-                    value === "allievo_adulto" ? "Allievo maggiorenne" : "Genitore"
-                  }
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="genitore">Genitore</SelectItem>
-                <SelectItem value="allievo_adulto">Allievo maggiorenne</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>

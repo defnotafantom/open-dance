@@ -14,9 +14,6 @@ export const registratiSchema = z
     email: z.email({ error: "Inserisci un'email valida." }),
     password: z.string().min(8, { error: "Almeno 8 caratteri." }),
     confermaPassword: z.string(),
-    tipo: z.enum(["genitore", "allievo_adulto"], {
-      error: "Seleziona il tipo di account.",
-    }),
     accettaPrivacy: z.boolean().refine((v) => v, {
       error: "Devi accettare l'informativa privacy per registrarti.",
     }),

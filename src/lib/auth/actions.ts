@@ -59,7 +59,6 @@ export async function registrati(
     email: formData.get("email"),
     password: formData.get("password"),
     confermaPassword: formData.get("confermaPassword"),
-    tipo: formData.get("tipo"),
     accettaPrivacy: formData.get("accettaPrivacy") === "on",
     accettaFotoVideo: formData.get("accettaFotoVideo") === "on",
   });
@@ -76,7 +75,6 @@ export async function registrati(
       data: {
         nome: parsed.data.nome,
         cognome: parsed.data.cognome,
-        ruolo: parsed.data.tipo,
       },
     },
   });
@@ -109,7 +107,7 @@ export async function registrati(
     redirect("/login?registrato=1");
   }
 
-  redirect(areaPerRuolo(parsed.data.tipo));
+  redirect("/area-genitore");
 }
 
 export async function logout() {

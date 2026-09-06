@@ -1,4 +1,4 @@
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { AppShell, type NavItem } from "@/components/layout/app-shell";
 
 const NAV: NavItem[] = [
@@ -10,10 +10,11 @@ const NAV: NavItem[] = [
   { href: "/admin/eventi", label: "Eventi" },
   { href: "/admin/comunicazioni", label: "Comunicazioni" },
   { href: "/admin/staff", label: "Staff" },
+  { href: "/admin/impostazioni", label: "Impostazioni" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const profile = await requireRuolo(["admin", "staff"]);
+  const profile = await requireRuolo(RUOLI_STAFF);
 
   return (
     <AppShell title="Area staff" nav={NAV} profile={profile}>

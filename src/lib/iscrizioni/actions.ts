@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResult = { error?: string };
@@ -72,7 +72,7 @@ export async function ritiraRichiesta(iscrizioneId: string): Promise<ActionResul
 }
 
 export async function approvaIscrizione(iscrizioneId: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase
     .from("iscrizioni")
@@ -89,7 +89,7 @@ export async function approvaIscrizione(iscrizioneId: string): Promise<ActionRes
 }
 
 export async function rifiutaIscrizione(iscrizioneId: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("iscrizioni").delete().eq("id", iscrizioneId);
   if (error) {

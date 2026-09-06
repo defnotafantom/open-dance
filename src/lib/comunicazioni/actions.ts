@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getProfile } from "@/lib/auth/dal";
+import { getProfile, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { comunicazioneSchema, type ComunicazioneInput, type TargetInput } from "@/lib/comunicazioni/schemas";
 import type { RuoloEnum } from "@/lib/supabase/database.types";
@@ -78,7 +78,7 @@ async function risolviDestinatariPush(
 
 export async function pubblicaComunicazione(input: ComunicazioneInput): Promise<ActionResult> {
   const profile = await getProfile();
-  if (!["admin", "staff", "insegnante"].includes(profile.ruolo)) {
+  if (![...RUOLI_STAFF, "insegnante"].includes(profile.ruolo)) {
     return { error: "Non sei autorizzato a pubblicare comunicazioni." };
   }
 

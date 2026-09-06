@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getProfile, requireRuolo } from "@/lib/auth/dal";
+import { getProfile, requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { studenteSchema, type StudenteInput } from "@/lib/studenti/schemas";
 
@@ -9,8 +9,8 @@ export type ActionResult = { error?: string };
 
 export async function creaFiglio(input: StudenteInput): Promise<ActionResult> {
   const profile = await getProfile();
-  if (profile.ruolo !== "genitore") {
-    return { error: "Solo un genitore puo' aggiungere un figlio." };
+  if (profile.ruolo !== "allievo") {
+    return { error: "Non sei autorizzato ad aggiungere un iscritto." };
   }
 
   const parsed = studenteSchema.safeParse(input);
@@ -57,10 +57,11 @@ export async function aggiornaStudente(id: string, input: StudenteInput): Promis
   return {};
 }
 
-export async function attivaProfiloAllievoAdulto(input: StudenteInput): Promise<ActionResult> {
+/** Aggiunge se stesso/a come iscritto/a (un solo record di questo tipo per account). */
+export async function iscriviTeStesso(input: StudenteInput): Promise<ActionResult> {
   const profile = await getProfile();
-  if (profile.ruolo !== "allievo_adulto") {
-    return { error: "Funzione riservata agli allievi maggiorenni." };
+  if (profile.ruolo !== "allievo") {
+    return { error: "Non sei autorizzato a iscriverti." };
   }
 
   const parsed = studenteSchema.safeParse(input);
@@ -86,7 +87,7 @@ export async function attivaProfiloAllievoAdulto(input: StudenteInput): Promise<
 }
 
 export async function eliminaStudenteStaff(id: string): Promise<ActionResult> {
-  await requireRuolo(["admin", "staff"]);
+  await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { error } = await supabase.from("studenti").delete().eq("id", id);
   if (error) {

@@ -51,12 +51,13 @@ export function BenvenutoForm() {
       ? await supabase.from("profiles").select("ruolo").eq("id", userData.user.id).single()
       : { data: null };
 
-    const area =
-      profile?.ruolo === "admin" || profile?.ruolo === "staff"
-        ? "/admin"
-        : profile?.ruolo === "insegnante"
-          ? "/area-insegnante"
-          : "/area-genitore";
+    const area = ["webmaster", "proprietario", "co_proprietario", "segretario"].includes(
+      profile?.ruolo ?? ""
+    )
+      ? "/admin"
+      : profile?.ruolo === "insegnante"
+        ? "/area-insegnante"
+        : "/area-genitore";
 
     router.push(area);
   }

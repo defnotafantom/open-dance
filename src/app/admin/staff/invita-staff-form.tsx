@@ -15,6 +15,13 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
+const RUOLO_LABEL: Record<string, string> = {
+  proprietario: "Proprietario/a",
+  co_proprietario: "Co-proprietario/a",
+  segretario: "Segretario/a",
+  insegnante: "Insegnante",
+};
+
 export function InvitaStaffForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -77,17 +84,16 @@ export function InvitaStaffForm() {
       </div>
       <div className="grid gap-2">
         <Label>Ruolo</Label>
-        <Select name="ruolo" defaultValue="staff">
+        <Select name="ruolo" defaultValue="segretario">
           <SelectTrigger className="w-full">
-            <SelectValue>
-              {(value: string | null) =>
-                value === "insegnante" ? "Insegnante" : "Staff / segreteria"
-              }
-            </SelectValue>
+            <SelectValue>{(value: string | null) => RUOLO_LABEL[value ?? "segretario"]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="staff">Staff / segreteria</SelectItem>
-            <SelectItem value="insegnante">Insegnante</SelectItem>
+            {Object.entries(RUOLO_LABEL).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo } from "@/lib/auth/dal";
+import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -73,7 +73,7 @@ export async function assicuraLezioni(
 }
 
 async function verificaProprietaClasse(classeId: string) {
-  const profile = await requireRuolo(["admin", "staff", "insegnante"]);
+  const profile = await requireRuolo([...RUOLI_STAFF, "insegnante"]);
   if (profile.ruolo === "insegnante") {
     const supabase = await createClient();
     const { data: classe } = await supabase
