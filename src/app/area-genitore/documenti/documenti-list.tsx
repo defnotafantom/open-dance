@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataList, DataListItem, DataListRow, DataListLabel } from "@/components/ui/data-list";
 
 export type DocumentoRiga = {
   id: string;
@@ -57,31 +58,82 @@ export function DocumentiList({ documenti }: { documenti: DocumentoRiga[] }) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Figlio/a</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Scadenza</TableHead>
-          <TableHead className="text-right">Azioni</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      <Table className="hidden md:table">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Figlio/a</TableHead>
+            <TableHead>Tipo</TableHead>
+            <TableHead>Scadenza</TableHead>
+            <TableHead className="text-right">Azioni</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {documenti.map((d) => (
+            <TableRow key={d.id}>
+              <TableCell className="font-medium">{d.studente_nome}</TableCell>
+              <TableCell>{d.tipo}</TableCell>
+              <TableCell className="flex items-center gap-2">
+                {d.data_scadenza ? new Date(d.data_scadenza).toLocaleDateString("it-IT") : "—"}
+                <BadgeScadenza dataScadenza={d.data_scadenza} />
+              </TableCell>
+              <TableCell className="flex justify-end gap-2 text-right">
+                <Button variant="outline" size="sm" onClick={() => handleScarica(d.file_path)}>
+                  Scarica
+                </Button>
+                <ConfirmActionDialog
+                  trigger={
+                    <Button variant="destructive" size="sm">
+                      Elimina
+                    </Button>
+                  }
+                  title="Eliminare questo documento?"
+                  confirmLabel="Elimina"
+                  onConfirm={async () => {
+                    const result = await eliminaDocumento(d.id, d.file_path);
+                    if (result.error) {
+                      toast.error(result.error);
+                      return;
+                    }
+                    toast.success("Documento eliminato.");
+                    router.refresh();
+                  }}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <DataList>
         {documenti.map((d) => (
-          <TableRow key={d.id}>
-            <TableCell className="font-medium">{d.studente_nome}</TableCell>
-            <TableCell>{d.tipo}</TableCell>
-            <TableCell className="flex items-center gap-2">
-              {d.data_scadenza ? new Date(d.data_scadenza).toLocaleDateString("it-IT") : "—"}
+          <DataListItem key={d.id}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-medium">{d.studente_nome}</p>
               <BadgeScadenza dataScadenza={d.data_scadenza} />
-            </TableCell>
-            <TableCell className="flex justify-end gap-2 text-right">
-              <Button variant="outline" size="sm" onClick={() => handleScarica(d.file_path)}>
+            </div>
+            <DataListRow>
+              <DataListLabel>Tipo</DataListLabel>
+              <span>{d.tipo}</span>
+            </DataListRow>
+            <DataListRow>
+              <DataListLabel>Scadenza</DataListLabel>
+              <span>
+                {d.data_scadenza ? new Date(d.data_scadenza).toLocaleDateString("it-IT") : "—"}
+              </span>
+            </DataListRow>
+            <div className="mt-1 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => handleScarica(d.file_path)}
+              >
                 Scarica
               </Button>
               <ConfirmActionDialog
                 trigger={
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" className="flex-1">
                     Elimina
                   </Button>
                 }
@@ -97,10 +149,10 @@ export function DocumentiList({ documenti }: { documenti: DocumentoRiga[] }) {
                   router.refresh();
                 }}
               />
-            </TableCell>
-          </TableRow>
+            </div>
+          </DataListItem>
         ))}
-      </TableBody>
-    </Table>
+      </DataList>
+    </>
   );
 }

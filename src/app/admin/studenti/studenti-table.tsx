@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataList, DataListItem, DataListRow, DataListLabel } from "@/components/ui/data-list";
 
 export type StudenteRiga = {
   id: string;
@@ -50,54 +51,98 @@ export function StudentiTable({ studenti }: { studenti: StudenteRiga[] }) {
       {filtrati.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nessuno studente corrisponde alla ricerca.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Data di nascita</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Referente</TableHead>
-              <TableHead className="text-right">Azioni</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Data di nascita</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Referente</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtrati.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell className="font-medium">
+                    {s.nome} {s.cognome}
+                  </TableCell>
+                  <TableCell>{new Date(s.data_nascita).toLocaleDateString("it-IT")}</TableCell>
+                  <TableCell>
+                    <Badge variant={s.is_adulto ? "secondary" : "outline"}>
+                      {s.is_adulto ? "Allievo adulto" : "Minore"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{s.referente}</TableCell>
+                  <TableCell className="text-right">
+                    <ConfirmActionDialog
+                      trigger={
+                        <Button variant="destructive" size="sm">
+                          Elimina
+                        </Button>
+                      }
+                      title={`Eliminare ${s.nome} ${s.cognome}?`}
+                      description="Iscrizioni, presenze e pagamenti collegati verranno eliminati."
+                      confirmLabel="Elimina"
+                      onConfirm={async () => {
+                        const result = await eliminaStudenteStaff(s.id);
+                        if (result.error) {
+                          toast.error(result.error);
+                          return;
+                        }
+                        toast.success("Studente eliminato.");
+                        router.refresh();
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <DataList>
             {filtrati.map((s) => (
-              <TableRow key={s.id}>
-                <TableCell className="font-medium">
-                  {s.nome} {s.cognome}
-                </TableCell>
-                <TableCell>{new Date(s.data_nascita).toLocaleDateString("it-IT")}</TableCell>
-                <TableCell>
+              <DataListItem key={s.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium">
+                    {s.nome} {s.cognome}
+                  </p>
                   <Badge variant={s.is_adulto ? "secondary" : "outline"}>
                     {s.is_adulto ? "Allievo adulto" : "Minore"}
                   </Badge>
-                </TableCell>
-                <TableCell>{s.referente}</TableCell>
-                <TableCell className="text-right">
-                  <ConfirmActionDialog
-                    trigger={
-                      <Button variant="destructive" size="sm">
-                        Elimina
-                      </Button>
+                </div>
+                <DataListRow>
+                  <DataListLabel>Nato/a il</DataListLabel>
+                  <span>{new Date(s.data_nascita).toLocaleDateString("it-IT")}</span>
+                </DataListRow>
+                <DataListRow>
+                  <DataListLabel>Referente</DataListLabel>
+                  <span>{s.referente}</span>
+                </DataListRow>
+                <ConfirmActionDialog
+                  trigger={
+                    <Button variant="destructive" size="sm" className="mt-1 w-full">
+                      Elimina
+                    </Button>
+                  }
+                  title={`Eliminare ${s.nome} ${s.cognome}?`}
+                  description="Iscrizioni, presenze e pagamenti collegati verranno eliminati."
+                  confirmLabel="Elimina"
+                  onConfirm={async () => {
+                    const result = await eliminaStudenteStaff(s.id);
+                    if (result.error) {
+                      toast.error(result.error);
+                      return;
                     }
-                    title={`Eliminare ${s.nome} ${s.cognome}?`}
-                    description="Iscrizioni, presenze e pagamenti collegati verranno eliminati."
-                    confirmLabel="Elimina"
-                    onConfirm={async () => {
-                      const result = await eliminaStudenteStaff(s.id);
-                      if (result.error) {
-                        toast.error(result.error);
-                        return;
-                      }
-                      toast.success("Studente eliminato.");
-                      router.refresh();
-                    }}
-                  />
-                </TableCell>
-              </TableRow>
+                    toast.success("Studente eliminato.");
+                    router.refresh();
+                  }}
+                />
+              </DataListItem>
             ))}
-          </TableBody>
-        </Table>
+          </DataList>
+        </>
       )}
     </div>
   );

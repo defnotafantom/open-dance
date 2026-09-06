@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataList, DataListItem, DataListRow, DataListLabel } from "@/components/ui/data-list";
 
 const STATO_LABEL: Record<string, string> = {
   presente: "Presente",
@@ -172,30 +173,53 @@ export default async function PresenzeGenitorePage() {
         ) : righeStorico.length === 0 ? (
           <p className="text-muted-foreground text-sm">Nessuna presenza registrata ancora.</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Figlio/a</TableHead>
-                <TableHead>Corso</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Stato</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            <Table className="hidden md:table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Figlio/a</TableHead>
+                  <TableHead>Corso</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Stato</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {righeStorico.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">{r.studente}</TableCell>
+                    <TableCell>{r.corso}</TableCell>
+                    <TableCell>{new Date(r.data).toLocaleDateString("it-IT")}</TableCell>
+                    <TableCell>
+                      <Badge variant={r.stato === "assente" ? "destructive" : "secondary"}>
+                        {STATO_LABEL[r.stato] ?? r.stato}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <DataList>
               {righeStorico.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.studente}</TableCell>
-                  <TableCell>{r.corso}</TableCell>
-                  <TableCell>{new Date(r.data).toLocaleDateString("it-IT")}</TableCell>
-                  <TableCell>
+                <DataListItem key={r.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">{r.studente}</p>
                     <Badge variant={r.stato === "assente" ? "destructive" : "secondary"}>
                       {STATO_LABEL[r.stato] ?? r.stato}
                     </Badge>
-                  </TableCell>
-                </TableRow>
+                  </div>
+                  <DataListRow>
+                    <DataListLabel>Corso</DataListLabel>
+                    <span>{r.corso}</span>
+                  </DataListRow>
+                  <DataListRow>
+                    <DataListLabel>Data</DataListLabel>
+                    <span>{new Date(r.data).toLocaleDateString("it-IT")}</span>
+                  </DataListRow>
+                </DataListItem>
               ))}
-            </TableBody>
-          </Table>
+            </DataList>
+          </>
         )}
       </div>
     </div>

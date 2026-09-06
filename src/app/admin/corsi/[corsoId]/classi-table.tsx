@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataList, DataListItem, DataListRow, DataListLabel } from "@/components/ui/data-list";
 
 export function ClassiTable({
   corsoId,
@@ -37,43 +38,104 @@ export function ClassiTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Giorno</TableHead>
-          <TableHead>Orario</TableHead>
-          <TableHead>Insegnante</TableHead>
-          <TableHead>Sala</TableHead>
-          <TableHead>Stagione</TableHead>
-          <TableHead>Stato</TableHead>
-          <TableHead className="text-right">Azioni</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      <Table className="hidden md:table">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Giorno</TableHead>
+            <TableHead>Orario</TableHead>
+            <TableHead>Insegnante</TableHead>
+            <TableHead>Sala</TableHead>
+            <TableHead>Stagione</TableHead>
+            <TableHead>Stato</TableHead>
+            <TableHead className="text-right">Azioni</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {classi.map((classe) => (
+            <TableRow key={classe.id}>
+              <TableCell>{GIORNI_SETTIMANA[classe.giorno_settimana]}</TableCell>
+              <TableCell>
+                {classe.orario_inizio.slice(0, 5)}–{classe.orario_fine.slice(0, 5)}
+              </TableCell>
+              <TableCell>{classe.insegnante_nome ?? "—"}</TableCell>
+              <TableCell>{classe.sala || "—"}</TableCell>
+              <TableCell>{classe.stagione}</TableCell>
+              <TableCell>
+                <Badge variant={classe.attiva ? "default" : "secondary"}>
+                  {classe.attiva ? "Attiva" : "Non attiva"}
+                </Badge>
+              </TableCell>
+              <TableCell className="flex justify-end gap-2 text-right">
+                <ClasseFormDialog
+                  corsoId={corsoId}
+                  classe={classe}
+                  insegnanti={insegnanti}
+                  trigger={<Button variant="outline" size="sm">Modifica</Button>}
+                />
+                <ConfirmActionDialog
+                  trigger={
+                    <Button variant="destructive" size="sm">
+                      Elimina
+                    </Button>
+                  }
+                  title="Eliminare questa classe?"
+                  description="Le iscrizioni e le presenze collegate verranno eliminate."
+                  confirmLabel="Elimina"
+                  onConfirm={async () => {
+                    const result = await eliminaClasse(classe.id, corsoId);
+                    if (result.error) {
+                      toast.error(result.error);
+                      return;
+                    }
+                    toast.success("Classe eliminata.");
+                    router.refresh();
+                  }}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <DataList>
         {classi.map((classe) => (
-          <TableRow key={classe.id}>
-            <TableCell>{GIORNI_SETTIMANA[classe.giorno_settimana]}</TableCell>
-            <TableCell>
-              {classe.orario_inizio.slice(0, 5)}–{classe.orario_fine.slice(0, 5)}
-            </TableCell>
-            <TableCell>{classe.insegnante_nome ?? "—"}</TableCell>
-            <TableCell>{classe.sala || "—"}</TableCell>
-            <TableCell>{classe.stagione}</TableCell>
-            <TableCell>
+          <DataListItem key={classe.id}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-medium">
+                {GIORNI_SETTIMANA[classe.giorno_settimana]}{" "}
+                {classe.orario_inizio.slice(0, 5)}–{classe.orario_fine.slice(0, 5)}
+              </p>
               <Badge variant={classe.attiva ? "default" : "secondary"}>
                 {classe.attiva ? "Attiva" : "Non attiva"}
               </Badge>
-            </TableCell>
-            <TableCell className="flex justify-end gap-2 text-right">
+            </div>
+            <DataListRow>
+              <DataListLabel>Insegnante</DataListLabel>
+              <span>{classe.insegnante_nome ?? "—"}</span>
+            </DataListRow>
+            <DataListRow>
+              <DataListLabel>Sala</DataListLabel>
+              <span>{classe.sala || "—"}</span>
+            </DataListRow>
+            <DataListRow>
+              <DataListLabel>Stagione</DataListLabel>
+              <span>{classe.stagione}</span>
+            </DataListRow>
+            <div className="mt-1 flex gap-2">
               <ClasseFormDialog
                 corsoId={corsoId}
                 classe={classe}
                 insegnanti={insegnanti}
-                trigger={<Button variant="outline" size="sm">Modifica</Button>}
+                trigger={
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Modifica
+                  </Button>
+                }
               />
               <ConfirmActionDialog
                 trigger={
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" className="flex-1">
                     Elimina
                   </Button>
                 }
@@ -90,10 +152,10 @@ export function ClassiTable({
                   router.refresh();
                 }}
               />
-            </TableCell>
-          </TableRow>
+            </div>
+          </DataListItem>
         ))}
-      </TableBody>
-    </Table>
+      </DataList>
+    </>
   );
 }
