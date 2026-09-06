@@ -274,6 +274,19 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["consensi_privacy"]["Row"]>;
         Relationships: [];
       };
+      eventi: {
+        Row: {
+          id: string;
+          nome: string;
+          data: string;
+          luogo: string | null;
+          descrizione: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["eventi"]["Row"]> & { nome: string; data: string };
+        Update: Partial<Database["public"]["Tables"]["eventi"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

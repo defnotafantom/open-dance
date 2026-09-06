@@ -7,6 +7,7 @@ const NAV: NavItem[] = [
   { href: "/admin/studenti", label: "Studenti" },
   { href: "/admin/iscrizioni", label: "Iscrizioni" },
   { href: "/admin/pagamenti", label: "Pagamenti" },
+  { href: "/admin/eventi", label: "Eventi" },
   { href: "/admin/comunicazioni", label: "Comunicazioni" },
   { href: "/admin/staff", label: "Staff" },
 ];

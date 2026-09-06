@@ -8,6 +8,7 @@ const NAV: NavItem[] = [
   { href: "/area-genitore/pagamenti", label: "Pagamenti" },
   { href: "/area-genitore/presenze", label: "Presenze" },
   { href: "/area-genitore/documenti", label: "Documenti" },
+  { href: "/area-genitore/eventi", label: "Eventi" },
   { href: "/area-genitore/comunicazioni", label: "Comunicazioni" },
 ];
 
