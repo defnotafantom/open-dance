@@ -4,7 +4,17 @@ import { createServerClient } from "@supabase/ssr";
 const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore"];
 const SOLO_OSPITI = ["/login", "/registrati"];
 
+// Deve restare in sync con il bypass temporaneo in src/lib/auth/dal.ts:
+// quando attivo, lascia passare tutte le richieste senza controllare la
+// sessione Supabase (che qui non esiste comunque).
+const BYPASS_SVILUPPO_ATTIVO =
+  process.env.NODE_ENV !== "production" && !!process.env.NEXT_PUBLIC_DEV_BYPASS_ROLE;
+
 export async function proxy(request: NextRequest) {
+  if (BYPASS_SVILUPPO_ATTIVO) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

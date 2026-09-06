@@ -4,7 +4,31 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { RuoloEnum } from "@/lib/supabase/database.types";
 
+// Bypass TEMPORANEO per vedere le aree protette senza un progetto Supabase
+// reale. Attivo solo fuori produzione: impostare NEXT_PUBLIC_DEV_BYPASS_ROLE
+// in .env.local (es. "admin", "insegnante", "genitore") e riavviare `npm run
+// dev`. Da rimuovere (questa funzione + i due controlli che la usano) non
+// appena e' collegato un progetto Supabase vero.
+function profiloBypassSviluppo() {
+  const ruolo = process.env.NEXT_PUBLIC_DEV_BYPASS_ROLE as RuoloEnum | undefined;
+  if (process.env.NODE_ENV === "production" || !ruolo) {
+    return null;
+  }
+  return {
+    id: "dev-bypass",
+    nome: "Anteprima",
+    cognome: ruolo,
+    email: "anteprima@dev.local",
+    telefono: null,
+    ruolo,
+  };
+}
+
 export const verifySession = cache(async () => {
+  if (profiloBypassSviluppo()) {
+    return { userId: "dev-bypass" };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
 
@@ -16,6 +40,11 @@ export const verifySession = cache(async () => {
 });
 
 export const getProfile = cache(async () => {
+  const bypass = profiloBypassSviluppo();
+  if (bypass) {
+    return bypass;
+  }
+
   const session = await verifySession();
   const supabase = await createClient();
 
@@ -33,6 +62,11 @@ export const getProfile = cache(async () => {
 });
 
 export const getOptionalProfile = cache(async () => {
+  const bypass = profiloBypassSviluppo();
+  if (bypass) {
+    return bypass;
+  }
+
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
