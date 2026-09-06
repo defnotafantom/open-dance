@@ -1,0 +1,36 @@
+import * as z from "zod";
+
+export const loginSchema = z.object({
+  email: z.email({ error: "Inserisci un'email valida." }),
+  password: z.string().min(1, { error: "Inserisci la password." }),
+});
+
+export const registratiSchema = z
+  .object({
+    nome: z.string().min(1, { error: "Inserisci il nome." }),
+    cognome: z.string().min(1, { error: "Inserisci il cognome." }),
+    email: z.email({ error: "Inserisci un'email valida." }),
+    password: z.string().min(8, { error: "Almeno 8 caratteri." }),
+    confermaPassword: z.string(),
+    tipo: z.enum(["genitore", "allievo_adulto"], {
+      error: "Seleziona il tipo di account.",
+    }),
+  })
+  .refine((data) => data.password === data.confermaPassword, {
+    error: "Le password non coincidono.",
+    path: ["confermaPassword"],
+  });
+
+export const recuperaPasswordSchema = z.object({
+  email: z.email({ error: "Inserisci un'email valida." }),
+});
+
+export const nuovaPasswordSchema = z
+  .object({
+    password: z.string().min(8, { error: "Almeno 8 caratteri." }),
+    confermaPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confermaPassword, {
+    error: "Le password non coincidono.",
+    path: ["confermaPassword"],
+  });
