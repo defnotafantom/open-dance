@@ -1,12 +1,9 @@
 import { ImageResponse } from "next/og";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ size: string }> }
-) {
-  const { size } = await params;
-  const dimension = Number(size) || 512;
+export const size = { width: 32, height: 32 };
+export const contentType = "image/png";
 
+export default function Icon() {
   return new ImageResponse(
     (
       <div
@@ -20,13 +17,13 @@ export async function GET(
           color: "#3a1216",
           fontFamily: "sans-serif",
           fontWeight: 800,
-          fontSize: Math.round(dimension * 0.42),
-          letterSpacing: -2,
+          fontSize: 18,
+          letterSpacing: -1,
         }}
       >
         OD
       </div>
     ),
-    { width: dimension, height: dimension }
+    { ...size }
   );
 }
