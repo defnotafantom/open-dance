@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
+import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
 import { Cursor } from "@/components/marketing/cursor";
 import { Grain } from "@/components/marketing/grain";
 import { Marquee } from "@/components/marketing/marquee";
@@ -82,14 +82,7 @@ export function HomeClient() {
             className="flex items-center justify-center"
             style={{ transform: "perspective(700px) rotateX(6deg) rotateY(-8deg)" }}
           >
-            <Image
-              src="/brand/od-glyph.png"
-              alt="Open Dance"
-              width={150}
-              height={98}
-              priority
-              className="drop-shadow-[0_20px_26px_color-mix(in_oklch,var(--primary),transparent_45%)]"
-            />
+            <OdGlyphMark className="w-[150px] drop-shadow-[0_20px_26px_color-mix(in_oklch,var(--primary),transparent_45%)]" />
           </motion.div>
           <motion.div
             variants={heroItem}

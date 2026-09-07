@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { XIcon } from "lucide-react";
 import { vibrataConferma } from "@/lib/haptics";
+import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
 import type { NavItem } from "@/components/layout/orb-nav";
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const righe: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    righe.push(items.slice(i, i + size));
+  }
+  return righe;
+}
 
 export function DiegeticNav({
   items,
@@ -16,8 +24,9 @@ export function DiegeticNav({
   aperto: boolean;
   onClose: () => void;
 }) {
-  const vicini = items.slice(0, 2);
-  const lontani = items.slice(2);
+  // Righe di 3 al massimo: la prima riga (indice 0) è la più vicina/grande,
+  // quelle successive si allontanano e rimpiccioliscono sul "palco".
+  const righe = chunk(items, 3);
 
   return (
     <AnimatePresence>
@@ -48,18 +57,12 @@ export function DiegeticNav({
           </button>
 
           <div className="relative flex flex-col items-center gap-2 pt-16">
-            <Image
-              src="/brand/od-glyph.png"
-              alt=""
-              width={52}
-              height={34}
-              className="drop-shadow-[0_10px_16px_color-mix(in_oklch,var(--primary),transparent_45%)]"
-            />
+            <OdGlyphMark className="w-13 drop-shadow-[0_10px_16px_color-mix(in_oklch,var(--primary),transparent_45%)]" />
             <h2 className="font-display text-xl uppercase tracking-tight">Dove vuoi andare?</h2>
             <p className="text-xs text-muted-foreground">Tocca una luce sul palco</p>
           </div>
 
-          <div className="relative mt-auto flex flex-1 flex-col justify-end gap-10 overflow-hidden pb-16">
+          <div className="relative mt-auto flex flex-1 flex-col justify-end gap-8 overflow-hidden pb-16">
             <div
               aria-hidden
               className="absolute inset-0"
@@ -71,16 +74,22 @@ export function DiegeticNav({
               }}
             />
 
-            <div className="relative flex flex-wrap items-end justify-center gap-6 px-6 opacity-85">
-              {lontani.map((item) => (
-                <PoolLink key={item.href} item={item} onClose={onClose} size={78} fontSize={10} />
-              ))}
-            </div>
-            <div className="relative flex flex-wrap items-end justify-center gap-5 px-6">
-              {vicini.map((item) => (
-                <PoolLink key={item.href} item={item} onClose={onClose} size={108} fontSize={14} />
-              ))}
-            </div>
+            {[...righe].reverse().map((riga, indiceInverso) => {
+              const profondita = righe.length - 1 - indiceInverso;
+              const size = Math.max(64, 112 - profondita * 18);
+              const fontSize = Math.max(9, 15 - profondita * 2);
+              return (
+                <div
+                  key={riga.map((i) => i.href).join("-")}
+                  className="relative flex flex-wrap items-end justify-center gap-5 px-6"
+                  style={{ opacity: Math.max(0.6, 1 - profondita * 0.15) }}
+                >
+                  {riga.map((item) => (
+                    <PoolLink key={item.href} item={item} onClose={onClose} size={size} fontSize={fontSize} />
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </motion.div>
       )}

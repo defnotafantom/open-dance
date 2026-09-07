@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { XIcon } from "lucide-react";
+import { XIcon, SparklesIcon } from "lucide-react";
 import { logout } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushToggle } from "@/components/push-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
+import { DiegeticNav } from "@/components/marketing/diegetic-nav";
 import { vibrataConferma } from "@/lib/haptics";
 
 export type NavItem = { href: string; label: string };
@@ -28,6 +29,7 @@ export function OrbNav({
   profile?: { nome: string; cognome: string; email: string };
 }) {
   const [aperto, setAperto] = useState(false);
+  const [scenografica, setScenografica] = useState(false);
   const pathname = usePathname();
 
   function chiudi() {
@@ -52,7 +54,7 @@ export function OrbNav({
         style={{ visibility: aperto ? "hidden" : "visible" }}
         transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
       >
-        <Image src="/brand/od-glyph.png" alt="" width={26} height={17} />
+        <OdGlyphMark className="w-6" />
       </motion.button>
 
       <AnimatePresence>
@@ -70,8 +72,19 @@ export function OrbNav({
               className="flex flex-1 flex-col"
             >
               <div className="flex items-center justify-between px-5 pt-5">
-                <Image src="/brand/od-glyph.png" alt="" width={30} height={20} />
+                <OdGlyphMark className="w-7" />
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      vibrataConferma();
+                      setScenografica(true);
+                    }}
+                    aria-label="Prova la versione scenografica"
+                    className="flex size-9 items-center justify-center rounded-full bg-foreground/6"
+                  >
+                    <SparklesIcon className="size-4" />
+                  </button>
                   <ThemeToggle />
                   <button
                     type="button"
@@ -142,6 +155,12 @@ export function OrbNav({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <DiegeticNav
+        items={nav}
+        aperto={scenografica}
+        onClose={() => setScenografica(false)}
+      />
     </>
   );
 }

@@ -60,25 +60,6 @@
   }
 }
 
-@keyframes od-splash-spin {
-  0%,
-  100% {
-    transform: perspective(900px) rotateY(-26deg) rotateX(4deg);
-  }
-  50% {
-    transform: perspective(900px) rotateY(26deg) rotateX(4deg);
-  }
-}
-
-@keyframes od-splash-ring {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes od-splash-pulse {
   0%,
   100% {
