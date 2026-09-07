@@ -334,6 +334,23 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["richieste_cancellazione"]["Row"]>;
         Relationships: [];
       };
+      insegnanti_profili: {
+        Row: {
+          profilo_id: string;
+          bio: string | null;
+          carriera: string | null;
+          specializzazioni: string | null;
+          anni_esperienza: number | null;
+          foto_path: string | null;
+          pubblicato: boolean;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["insegnanti_profili"]["Row"]> & {
+          profilo_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["insegnanti_profili"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

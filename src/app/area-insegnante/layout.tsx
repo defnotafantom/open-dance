@@ -6,6 +6,7 @@ const NAV: NavItem[] = [
   { href: "/area-insegnante/presenze", label: "Presenze" },
   { href: "/area-insegnante/eventi", label: "Eventi" },
   { href: "/area-insegnante/comunicazioni", label: "Comunicazioni" },
+  { href: "/area-insegnante/profilo", label: "Il mio profilo" },
 ];
 
 export default async function AreaInsegnanteLayout({

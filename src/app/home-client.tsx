@@ -106,6 +106,15 @@ export function HomeClient() {
               />
             </Magnetic>
           </motion.div>
+
+          <motion.div variants={heroItem}>
+            <Link
+              href="/insegnanti"
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Scopri i nostri insegnanti &rarr;
+            </Link>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -133,6 +142,14 @@ export function HomeClient() {
       <footer className="dark mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
         <Logo size={24} />
         <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
+        <div className="flex gap-4 text-xs">
+          <Link href="/insegnanti" className="hover:text-sidebar-foreground">
+            Insegnanti
+          </Link>
+          <Link href="/login" className="hover:text-sidebar-foreground">
+            Accesso staff
+          </Link>
+        </div>
       </footer>
     </main>
   );
