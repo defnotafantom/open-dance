@@ -98,7 +98,7 @@ export function AnnouncementComposer({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-lg border p-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-lg panel-3d p-4">
       <div className="grid gap-2">
         <Label htmlFor="titolo">Titolo</Label>
         <Input id="titolo" value={titolo} onChange={(e) => setTitolo(e.target.value)} />

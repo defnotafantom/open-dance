@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/brand/logo";
 import { Grain } from "@/components/marketing/grain";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ArrowLeftIcon } from "lucide-react";
 
 export default async function InsegnanteProfiloPage({
@@ -36,7 +37,8 @@ export default async function InsegnanteProfiloPage({
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="dark relative overflow-hidden bg-background text-foreground">
+      <ThemeToggle className="fixed top-4 right-4 z-40" />
+      <section className="relative overflow-hidden bg-background text-foreground">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -100,7 +102,7 @@ export default async function InsegnanteProfiloPage({
         </div>
       </section>
 
-      <footer className="dark mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
+      <footer className="mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
         <Logo size={24} />
         <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
       </footer>

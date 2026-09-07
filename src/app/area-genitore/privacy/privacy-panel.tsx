@@ -65,7 +65,7 @@ export function PrivacyPanel({ richiestaInAttesa }: { richiestaInAttesa: Richies
 
   return (
     <div className="flex max-w-lg flex-col gap-6">
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
+      <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
         <h2 className="font-semibold">Esporta i tuoi dati</h2>
         <p className="text-muted-foreground text-sm">
           Scarica un file con il tuo profilo, gli iscritti collegati, le
@@ -76,7 +76,7 @@ export function PrivacyPanel({ richiestaInAttesa }: { richiestaInAttesa: Richies
         </Button>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
+      <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
         <h2 className="font-semibold">Cancellazione dell&apos;account</h2>
         {richiestaInAttesa ? (
           <>

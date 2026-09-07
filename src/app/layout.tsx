@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Anton } from "next/font/google";
+import { Geist, Geist_Mono, Anton, Alex_Brush } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SplashScreen } from "@/components/marketing/splash-screen";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +17,12 @@ const geistMono = Geist_Mono({
 
 const anton = Anton({
   variable: "--font-anton",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const alexBrush = Alex_Brush({
+  variable: "--font-alex-brush",
   weight: "400",
   subsets: ["latin"],
 });
@@ -40,11 +48,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="it"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${alexBrush.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster />
+        <ThemeProvider>
+          <SplashScreen />
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

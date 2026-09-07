@@ -43,7 +43,7 @@ export function WeeklySchedule({
               {classiDelGiorno.map((classe) => (
                 <li
                   key={classe.id}
-                  className="rounded-lg border p-3 text-sm flex items-start justify-between gap-2"
+                  className="rounded-lg panel-3d p-3 text-sm flex items-start justify-between gap-2"
                 >
                   <div>
                     <p className="font-medium">{classe.corso_nome}</p>

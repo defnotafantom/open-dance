@@ -99,7 +99,7 @@ export default async function AreaGenitorePage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ icona: Icona, titolo, valore }) => (
-          <div key={titolo} className="flex flex-col gap-2 rounded-lg border p-4">
+          <div key={titolo} className="flex flex-col gap-2 rounded-lg panel-3d p-4">
             <span className="flex size-8 items-center justify-center rounded-md bg-accent text-accent-foreground">
               <Icona className="size-4" />
             </span>
@@ -110,7 +110,7 @@ export default async function AreaGenitorePage() {
       </div>
 
       {figli.length === 0 ? (
-        <div className="flex flex-col gap-3 rounded-lg border p-4">
+        <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
           <p className="text-sm">Non hai ancora aggiunto nessun iscritto/a.</p>
           <Button size="sm" className="w-fit" nativeButton={false} render={<Link href="/area-genitore/figli">Aggiungi un iscritto</Link>} />
         </div>
@@ -126,7 +126,7 @@ export default async function AreaGenitorePage() {
               {(prossimeLezioni ?? []).slice(0, 6).map((l) => (
                 <li
                   key={l.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-lg panel-3d p-3 text-sm"
                 >
                   <span className="font-medium">{corsoNomeByClasse.get(l.classe_id) ?? "Corso"}</span>
                   <span className="text-muted-foreground">
@@ -149,7 +149,7 @@ export default async function AreaGenitorePage() {
       </div>
 
       {scuola?.indirizzo && (
-        <div className="flex flex-col gap-3 rounded-lg border p-4">
+        <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
           <p className="font-medium">{scuola.nome_scuola}</p>
           <p className="text-muted-foreground text-sm">{scuola.indirizzo}</p>
           <div className="flex flex-wrap gap-2">

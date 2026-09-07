@@ -122,7 +122,7 @@ export default async function PresenzePage() {
             return (
               <li
                 key={l.id}
-                className="flex flex-col gap-2 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 rounded-lg panel-3d p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <Link
                   href={`/area-insegnante/presenze/${l.id}`}

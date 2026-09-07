@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Grain } from "@/components/marketing/grain";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="dark relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden bg-background p-4 py-10 text-foreground">
+    <main className="relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden bg-background p-4 py-10 text-foreground">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -14,6 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         }}
       />
       <Grain />
+      <ThemeToggle className="fixed top-4 right-4 z-40" />
       <Link href="/" className="relative">
         <Logo size={34} />
       </Link>

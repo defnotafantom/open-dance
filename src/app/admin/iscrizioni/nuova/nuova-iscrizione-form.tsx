@@ -137,7 +137,7 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
         </Alert>
       )}
 
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
+      <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
         <Label>1. Referente (email dell&apos;account)</Label>
         <div className="flex gap-2">
           <Input
@@ -192,7 +192,7 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
       </div>
 
       {ricercaFatta && (
-        <div className="flex flex-col gap-3 rounded-lg border p-4">
+        <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
           <Label>2. Iscritto</Label>
 
           {referenteTrovato && referenteTrovato.figli.length > 0 && (
@@ -270,7 +270,7 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
+      <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
         <Label>3. Classe</Label>
         <Select value={classeId} onValueChange={(v) => setClasseId(v ?? "")}>
           <SelectTrigger className="w-full">

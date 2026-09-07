@@ -11,7 +11,7 @@ function DataListItem({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="data-list-item"
-      className={cn("flex flex-col gap-2 rounded-lg border p-4", className)}
+      className={cn("panel-3d flex flex-col gap-2 rounded-lg p-4", className)}
       {...props}
     />
   );

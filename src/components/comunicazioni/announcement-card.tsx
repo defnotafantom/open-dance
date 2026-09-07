@@ -24,7 +24,7 @@ export function AnnouncementCard({
   const [pending, startTransition] = useTransition();
 
   return (
-    <li className="rounded-lg border p-4">
+    <li className="rounded-lg panel-3d p-4">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-medium">{comunicazione.titolo}</h3>
         {!letta && <Badge variant="secondary">Nuovo</Badge>}

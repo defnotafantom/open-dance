@@ -57,7 +57,7 @@ export function RosterPresenze({
   return (
     <ul className="flex flex-col gap-3">
       {allievi.map((allievo) => (
-        <li key={allievo.id} className="flex flex-col gap-2 rounded-lg border p-3">
+        <li key={allievo.id} className="flex flex-col gap-2 rounded-lg panel-3d p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-medium">
               {allievo.nome} {allievo.cognome}

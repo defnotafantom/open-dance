@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
@@ -8,8 +10,16 @@ import { Cursor } from "@/components/marketing/cursor";
 import { Grain } from "@/components/marketing/grain";
 import { Marquee } from "@/components/marketing/marquee";
 import { Magnetic } from "@/components/marketing/magnetic";
+import { DiegeticNav } from "@/components/marketing/diegetic-nav";
+import { OrbNav, type NavItem } from "@/components/layout/orb-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const RIGHE_TITOLO = ["La tua scuola", "di danza,", "tutta in un posto."];
+const NAV_HOME: NavItem[] = [
+  { href: "#punti-forza", label: "Perché noi" },
+  { href: "/insegnanti", label: "Insegnanti" },
+  { href: "/login", label: "Accedi" },
+  { href: "/registrati", label: "Registrati" },
+];
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
@@ -21,11 +31,6 @@ const heroContainer = {
 const heroItem = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT_EXPO } },
-};
-
-const heroLine = {
-  hidden: { y: "100%" },
-  show: { y: "0%", transition: { duration: 0.7, ease: EASE_OUT_EXPO } },
 };
 
 const PUNTI_FORZA = [
@@ -47,53 +52,83 @@ const PUNTI_FORZA = [
 ];
 
 export function HomeClient() {
+  const [scenografica, setScenografica] = useState(false);
+
   return (
     <main className="flex flex-1 flex-col cursor-none max-lg:cursor-auto">
       <Cursor />
       <Grain />
 
-      <section className="dark relative flex flex-col items-center gap-10 overflow-hidden bg-background px-6 py-24 text-center text-foreground sm:py-32">
+      <OrbNav nav={NAV_HOME} />
+      <ThemeToggle className="fixed top-4 right-4 z-40" />
+
+      <section className="relative flex flex-col items-center gap-8 overflow-hidden bg-background px-6 pt-28 pb-20 text-center text-foreground sm:pt-32 sm:pb-28">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-x-0 -top-44 mx-auto size-[780px]"
           style={{
             background:
-              "radial-gradient(60% 50% at 50% 0%, color-mix(in oklch, var(--primary), transparent 78%), transparent)",
+              "radial-gradient(circle, color-mix(in oklch, var(--primary), transparent 62%) 0%, color-mix(in oklch, var(--primary), transparent 86%) 32%, transparent 62%)",
           }}
         />
         <motion.div
           variants={heroContainer}
           initial="hidden"
           animate="show"
-          className="relative flex flex-col items-center gap-10"
+          className="relative flex flex-col items-center gap-7"
         >
-          <motion.div variants={heroItem}>
-            <Logo size={40} />
+          <motion.div
+            variants={heroItem}
+            className="flex items-center justify-center"
+            style={{ transform: "perspective(700px) rotateX(6deg) rotateY(-8deg)" }}
+          >
+            <Image
+              src="/brand/od-glyph.png"
+              alt="Open Dance"
+              width={150}
+              height={98}
+              priority
+              className="drop-shadow-[0_20px_26px_color-mix(in_oklch,var(--primary),transparent_45%)]"
+            />
           </motion.div>
+          <motion.div
+            variants={heroItem}
+            aria-hidden
+            className="-mt-4 h-[18px] w-[130px] rounded-full"
+            style={{
+              background:
+                "radial-gradient(ellipse, color-mix(in oklch, var(--foreground), transparent 82%) 0%, transparent 72%)",
+            }}
+          />
 
           <div className="flex flex-col items-center gap-5">
             <motion.p
               variants={heroItem}
-              className="text-xs font-semibold tracking-[0.3em] text-primary uppercase"
+              className="text-xs font-semibold tracking-[0.32em] text-primary uppercase"
             >
-              Since 1999
+              Open Dance &middot; dal 1999
             </motion.p>
-            <h1 className="max-w-3xl font-display text-5xl leading-[0.95] font-normal tracking-tight uppercase text-balance sm:text-7xl lg:text-8xl">
-              {RIGHE_TITOLO.map((riga) => (
-                <span key={riga} className="block overflow-hidden">
-                  <motion.span variants={heroLine} className="block">
-                    {riga}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
+            <motion.h1
+              variants={heroItem}
+              className="max-w-3xl font-display text-6xl leading-[0.88] font-normal tracking-tight uppercase text-balance sm:text-7xl lg:text-8xl"
+            >
+              Fav
+              <br />
+              Place{" "}
+              <span
+                className="inline-block font-script text-primary normal-case"
+                style={{ transform: "rotate(-4deg)" }}
+              >
+                to be
+              </span>
+            </motion.h1>
             <motion.p variants={heroItem} className="max-w-md text-base text-muted-foreground">
               Corsi, orari, iscrizioni, pagamenti e comunicazioni: tutto quello
               che prima girava tra telefonate e messaggi, ora a portata di mano.
             </motion.p>
           </div>
 
-          <motion.div variants={heroItem} className="flex gap-4">
+          <motion.div variants={heroItem} className="flex flex-wrap justify-center gap-4">
             <Magnetic>
               <Button size="lg" nativeButton={false} render={<Link href="/login">Accedi</Link>} />
             </Magnetic>
@@ -108,19 +143,20 @@ export function HomeClient() {
           </motion.div>
 
           <motion.div variants={heroItem}>
-            <Link
-              href="/insegnanti"
+            <button
+              type="button"
+              onClick={() => setScenografica(true)}
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              Scopri i nostri insegnanti &rarr;
-            </Link>
+              Prova la versione scenografica del menu &rarr;
+            </button>
           </motion.div>
         </motion.div>
       </section>
 
       <Marquee text="Corsi — Orari — Iscrizioni — Pagamenti — Comunicazioni" />
 
-      <section className="flex flex-col divide-y divide-border px-6 sm:px-12 lg:px-24">
+      <section id="punti-forza" className="flex flex-col divide-y divide-border px-6 sm:px-12 lg:px-24">
         {PUNTI_FORZA.map(({ numero, titolo, testo }, i) => (
           <motion.div
             key={numero}
@@ -139,7 +175,7 @@ export function HomeClient() {
         ))}
       </section>
 
-      <footer className="dark mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
+      <footer className="mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
         <Logo size={24} />
         <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
         <div className="flex gap-4 text-xs">
@@ -151,6 +187,8 @@ export function HomeClient() {
           </Link>
         </div>
       </footer>
+
+      <DiegeticNav items={NAV_HOME} aperto={scenografica} onClose={() => setScenografica(false)} />
     </main>
   );
 }

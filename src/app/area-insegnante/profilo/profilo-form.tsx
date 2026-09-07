@@ -90,7 +90,7 @@ export function ProfiloInsegnanteForm({
         </Alert>
       )}
 
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
+      <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
         <Label>Foto</Label>
         <div className="flex items-center gap-4">
           <div className="size-20 shrink-0 overflow-hidden rounded-full bg-muted">

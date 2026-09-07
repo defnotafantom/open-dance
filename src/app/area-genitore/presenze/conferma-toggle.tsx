@@ -50,7 +50,7 @@ export function ProssimeLezioniList({ righe }: { righe: ProssimaLezione[] }) {
         return (
           <li
             key={key}
-            className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-lg panel-3d p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="font-medium">
