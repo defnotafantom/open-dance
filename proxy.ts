@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore"];
+const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore", "/stampa"];
 const SOLO_OSPITI = ["/login", "/registrati"];
 
 // Deve restare in sync con il bypass temporaneo in src/lib/auth/dal.ts:

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { inviaEmail } from "@/lib/email/send";
 import { inviaPushAProfili } from "@/lib/push/send";
 import { TIPO_LABEL } from "@/lib/pagamenti/schemas";
 
-// Promemoria automatico: un pagamento riceve UN SOLO promemoria (email +
-// push), la prima volta che il cron lo trova entro 3 giorni dalla scadenza
+// Promemoria automatico: un pagamento riceve UN SOLO promemoria, solo come
+// notifica nell'app (nessuna email sui pagamenti, scelta della scuola), la
+// prima volta che il cron lo trova entro 3 giorni dalla scadenza
 // (o gia' scaduto). promemoria_inviato_at viene marcato solo se almeno un
 // canale ha effettivamente funzionato, cosi' se le chiavi non sono ancora
 // configurate il pagamento resta candidato ai run successivi.
@@ -40,24 +40,12 @@ export async function GET(request: Request) {
     .in("id", studenteIds);
   const studenteById = new Map((studenti ?? []).map((s) => [s.id, s]));
 
-  const referenteIds = [
-    ...new Set(
-      (studenti ?? []).map((s) => s.genitore_id ?? s.profilo_id).filter((id): id is string => !!id)
-    ),
-  ];
-  const { data: referenti } =
-    referenteIds.length > 0
-      ? await admin.from("profiles").select("id, email").in("id", referenteIds)
-      : { data: [] as { id: string; email: string }[] };
-  const emailById = new Map((referenti ?? []).map((r) => [r.id, r.email]));
-
   let inviati = 0;
 
   for (const p of pagamenti) {
     const studente = studenteById.get(p.studente_id);
     const referenteId = studente?.genitore_id ?? studente?.profilo_id;
     if (!referenteId) continue;
-    const email = emailById.get(referenteId);
 
     const residuo = (p.importo_dovuto - p.importo_pagato).toFixed(2);
     const nomeStudente = studente ? `${studente.nome} ${studente.cognome}` : "il tuo/la tua iscritto/a";
@@ -65,18 +53,8 @@ export async function GET(request: Request) {
       ? new Date(p.data_scadenza).toLocaleDateString("it-IT")
       : "";
     const oggetto = `Promemoria pagamento — ${TIPO_LABEL[p.tipo]}`;
-    const corpo = `Ciao,\n\nÈ in scadenza (${scadenzaTesto}) un pagamento di €${residuo} per ${nomeStudente} — ${TIPO_LABEL[p.tipo]}.\n\nPuoi verificare i dettagli nell'area pagamenti di Open Dance.\n\nGrazie,\nOpen Dance`;
 
     let almenoUnCanaleOk = false;
-
-    if (email) {
-      const risultato = await inviaEmail({
-        to: email,
-        subject: oggetto,
-        html: corpo.replace(/\n/g, "<br />"),
-      });
-      if (risultato.inviata) almenoUnCanaleOk = true;
-    }
 
     try {
       await inviaPushAProfili([referenteId], {

@@ -64,6 +64,13 @@ export const getProfile = cache(async () => {
     redirect("/login");
   }
 
+  // Chi ha attivato la verifica in due passaggi deve aver inserito anche il
+  // codice dell'app, non solo la password, per entrare nelle aree protette.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect("/verifica-accesso");
+  }
+
   return profile;
 });
 

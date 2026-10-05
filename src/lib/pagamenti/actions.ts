@@ -14,10 +14,17 @@ export async function registraPagamento(input: PagamentoInput): Promise<ActionRe
     return { error: "Dati del pagamento non validi." };
   }
 
+  // Quanto e' stato pagato non si scrive qui: arriva dagli incassi
+  // (versamenti), ognuno con la sua ricevuta.
+  const { importo_dovuto, data_scadenza, tipo, studente_id, note } = parsed.data;
   const supabase = await createClient();
   const { error } = await supabase.from("pagamenti").insert({
-    ...parsed.data,
-    stato: calcolaStato(parsed.data),
+    studente_id,
+    tipo,
+    importo_dovuto,
+    data_scadenza: data_scadenza || null,
+    note: note || null,
+    stato: calcolaStato({ importo_dovuto, importo_pagato: 0, data_scadenza }),
     registrato_da: profile.id,
   });
 
@@ -38,9 +45,26 @@ export async function aggiornaPagamento(id: string, input: PagamentoInput): Prom
   }
 
   const supabase = await createClient();
+  const { data: attuale } = await supabase
+    .from("pagamenti")
+    .select("importo_pagato")
+    .eq("id", id)
+    .maybeSingle();
+  const { importo_dovuto, data_scadenza, tipo, studente_id, note } = parsed.data;
   const { error } = await supabase
     .from("pagamenti")
-    .update({ ...parsed.data, stato: calcolaStato(parsed.data) })
+    .update({
+      studente_id,
+      tipo,
+      importo_dovuto,
+      data_scadenza: data_scadenza || null,
+      note: note || null,
+      stato: calcolaStato({
+        importo_dovuto,
+        importo_pagato: Number(attuale?.importo_pagato ?? 0),
+        data_scadenza,
+      }),
+    })
     .eq("id", id);
 
   if (error) {
@@ -58,9 +82,14 @@ export async function eliminaPagamento(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("pagamenti").delete().eq("id", id);
 
   if (error) {
-    return { error: error.message };
+    return {
+      error: error.message.includes("versamenti")
+        ? "Questa quota ha già delle ricevute: annulla prima le ricevute dal registro."
+        : error.message,
+    };
   }
 
   revalidatePath("/admin/pagamenti");
+  revalidatePath("/admin/registri", "layout");
   return {};
 }

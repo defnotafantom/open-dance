@@ -6,11 +6,13 @@ const NAV_BASE: NavItem[] = [
   { href: "/admin/corsi", label: "Corsi e classi" },
   { href: "/admin/studenti", label: "Studenti" },
   { href: "/admin/iscrizioni", label: "Iscrizioni" },
+  { href: "/admin/registri", label: "Registri" },
   { href: "/admin/pagamenti", label: "Pagamenti" },
   { href: "/admin/eventi", label: "Eventi" },
   { href: "/admin/comunicazioni", label: "Comunicazioni" },
   { href: "/admin/sito", label: "Sito pubblico" },
   { href: "/admin/staff", label: "Staff" },
+  { href: "/admin/sicurezza", label: "Sicurezza accesso" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

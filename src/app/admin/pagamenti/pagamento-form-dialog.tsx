@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import {
   pagamentoSchema,
   TIPO_LABEL,
-  METODO_LABEL,
   type PagamentoInput,
 } from "@/lib/pagamenti/schemas";
 import { registraPagamento, aggiornaPagamento } from "@/lib/pagamenti/actions";
@@ -39,8 +38,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const NESSUN_METODO = "nessuno";
 
 export type PagamentoEsistente = PagamentoInput & { id: string };
 export type StudenteOpzione = { id: string; nome: string; cognome: string };
@@ -185,27 +182,6 @@ export function PagamentoFormDialog({
               />
               <FormField
                 control={form.control}
-                name="importo_pagato"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Importo pagato (€)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
                 name="data_scadenza"
                 render={({ field }) => (
                   <FormItem>
@@ -217,56 +193,11 @@ export function PagamentoFormDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="data_pagamento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data pagamento</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-            <FormField
-              control={form.control}
-              name="metodo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Metodo</FormLabel>
-                  <Select
-                    value={field.value ?? NESSUN_METODO}
-                    onValueChange={(v) =>
-                      field.onChange(v === NESSUN_METODO ? null : (v as PagamentoInput["metodo"]))
-                    }
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue>
-                          {(v: string | null) =>
-                            v && v !== NESSUN_METODO
-                              ? METODO_LABEL[v as NonNullable<PagamentoInput["metodo"]>]
-                              : "Non specificato"
-                          }
-                        </SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value={NESSUN_METODO}>Non specificato</SelectItem>
-                      {Object.entries(METODO_LABEL).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <p className="text-muted-foreground text-xs">
+              I soldi ricevuti si registrano con &quot;Incassa&quot; nei Registri: ogni incasso ha la
+              sua ricevuta numerata.
+            </p>
             <FormField
               control={form.control}
               name="note"

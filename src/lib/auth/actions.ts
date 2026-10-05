@@ -41,6 +41,12 @@ export async function login(
     return { error: "Email o password non corrette." };
   }
 
+  // Verifica in due passaggi attiva: prima del gestionale serve il codice.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect("/verifica-accesso");
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("ruolo")

@@ -31,6 +31,7 @@ export type PagamentoMetodoEnum = "contanti" | "bonifico" | "pos" | "altro";
 export type PagamentoStatoEnum = "da_pagare" | "parziale" | "pagato" | "scaduto";
 export type ConsensoTipoEnum = "trattamento_dati" | "foto_video" | "newsletter";
 export type RichiestaCancellazioneStatoEnum = "in_attesa" | "completata" | "annullata";
+export type AttivitaSocio = "danza" | "fitness" | "entrambe";
 export type SezioneScuola = "scuola" | "aule" | "attivita" | "storia";
 export type CategoriaTraguardo =
   | "ambizione"
@@ -70,6 +71,10 @@ export interface Database {
           is_adulto: boolean;
           genitore_id: string | null;
           profilo_id: string | null;
+          numero_tessera: number | null;
+          attivita: AttivitaSocio;
+          data_tesseramento: string;
+          attivo: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["studenti"]["Row"]> & {
@@ -190,6 +195,7 @@ export interface Database {
           note: string | null;
           registrato_da: string | null;
           promemoria_inviato_at: string | null;
+          competenza: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["pagamenti"]["Row"]> & {
@@ -327,6 +333,10 @@ export interface Database {
           indirizzo: string | null;
           telefono: string | null;
           email_contatto: string | null;
+          denominazione_asd: string | null;
+          codice_fiscale_asd: string | null;
+          sede_legale: string | null;
+          numero_registro: string | null;
           updated_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["impostazioni_scuola"]["Row"]>;
@@ -446,6 +456,73 @@ export interface Database {
           consenso_privacy: boolean;
         };
         Update: Partial<Database["public"]["Tables"]["candidature"]["Row"]>;
+        Relationships: [];
+      };
+      tariffe: {
+        Row: {
+          id: string;
+          attivita: "danza" | "fitness";
+          voce: "iscrizione" | "mensile";
+          stagione: string;
+          importo: number;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["tariffe"]["Row"]> & {
+          attivita: "danza" | "fitness";
+          voce: "iscrizione" | "mensile";
+          stagione: string;
+          importo: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["tariffe"]["Row"]>;
+        Relationships: [];
+      };
+      versamenti: {
+        Row: {
+          id: string;
+          pagamento_id: string;
+          anno: number;
+          numero: number;
+          importo: number;
+          data: string;
+          metodo: PagamentoMetodoEnum;
+          pagatore_nome: string;
+          pagatore_codice_fiscale: string | null;
+          causale: string;
+          note: string | null;
+          annullato: boolean;
+          motivo_annullamento: string | null;
+          registrato_da: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["versamenti"]["Row"]> & {
+          pagamento_id: string;
+          importo: number;
+          metodo: PagamentoMetodoEnum;
+          pagatore_nome: string;
+          causale: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["versamenti"]["Row"]>;
+        Relationships: [];
+      };
+      uscite: {
+        Row: {
+          id: string;
+          data: string;
+          categoria: string;
+          descrizione: string;
+          importo: number;
+          metodo: PagamentoMetodoEnum;
+          note: string | null;
+          registrato_da: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["uscite"]["Row"]> & {
+          categoria: string;
+          descrizione: string;
+          importo: number;
+          metodo: PagamentoMetodoEnum;
+        };
+        Update: Partial<Database["public"]["Tables"]["uscite"]["Row"]>;
         Relationships: [];
       };
     };

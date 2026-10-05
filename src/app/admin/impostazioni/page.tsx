@@ -10,7 +10,7 @@ export default async function ImpostazioniPage() {
   const [{ data: impostazioni, error }, { data: richiesteGrezze }] = await Promise.all([
     supabase
       .from("impostazioni_scuola")
-      .select("nome_scuola, anno_fondazione, indirizzo, telefono, email_contatto")
+      .select("nome_scuola, anno_fondazione, indirizzo, telefono, email_contatto, denominazione_asd, codice_fiscale_asd, sede_legale, numero_registro")
       .eq("id", 1)
       .single(),
     supabase

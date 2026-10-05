@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { ChevronRightIcon } from "lucide-react";
 import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
@@ -26,6 +27,7 @@ function leggiGiaVistaServer() {
 
 export function SplashScreen() {
   const giaVista = useSyncExternalStore(subscribeNoop, leggiGiaVista, leggiGiaVistaServer);
+  const pathname = usePathname();
   const [sbloccato, setSbloccato] = useState(false);
   const [rimossa, setRimossa] = useState(false);
   const x = useMotionValue(0);
@@ -48,7 +50,8 @@ export function SplashScreen() {
     }
   }
 
-  if (giaVista || rimossa) return null;
+  // Le pagine di stampa (ricevute) non devono mai essere coperte dalla splash.
+  if (giaVista || rimossa || pathname.startsWith("/stampa")) return null;
 
   return (
     <div

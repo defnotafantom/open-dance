@@ -15,6 +15,10 @@ type Impostazioni = {
   indirizzo: string | null;
   telefono: string | null;
   email_contatto: string | null;
+  denominazione_asd: string | null;
+  codice_fiscale_asd: string | null;
+  sede_legale: string | null;
+  numero_registro: string | null;
 };
 
 export function ImpostazioniForm({ impostazioni }: { impostazioni: Impostazioni }) {
@@ -28,6 +32,10 @@ export function ImpostazioniForm({ impostazioni }: { impostazioni: Impostazioni 
   const [indirizzo, setIndirizzo] = useState(impostazioni.indirizzo ?? "");
   const [telefono, setTelefono] = useState(impostazioni.telefono ?? "");
   const [emailContatto, setEmailContatto] = useState(impostazioni.email_contatto ?? "");
+  const [denominazione, setDenominazione] = useState(impostazioni.denominazione_asd ?? "");
+  const [codiceFiscale, setCodiceFiscale] = useState(impostazioni.codice_fiscale_asd ?? "");
+  const [sedeLegale, setSedeLegale] = useState(impostazioni.sede_legale ?? "");
+  const [registro, setRegistro] = useState(impostazioni.numero_registro ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +53,10 @@ export function ImpostazioniForm({ impostazioni }: { impostazioni: Impostazioni 
       indirizzo: indirizzo.trim(),
       telefono: telefono.trim(),
       email_contatto: emailContatto.trim(),
+      denominazione_asd: denominazione.trim(),
+      codice_fiscale_asd: codiceFiscale.trim(),
+      sede_legale: sedeLegale.trim(),
+      numero_registro: registro.trim(),
     });
     setPending(false);
 
@@ -96,6 +108,42 @@ export function ImpostazioniForm({ impostazioni }: { impostazioni: Impostazioni 
             value={emailContatto}
             onChange={(e) => setEmailContatto(e.target.value)}
           />
+        </div>
+      </div>
+      <div className="mt-2 flex flex-col gap-3 border-t border-border pt-4">
+        <div>
+          <p className="text-sm font-medium">Dati dell&apos;associazione (ASD)</p>
+          <p className="text-muted-foreground text-xs">
+            Compaiono nell&apos;intestazione delle ricevute e in fondo al sito.
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="denominazione">Denominazione ASD</Label>
+          <Input
+            id="denominazione"
+            value={denominazione}
+            onChange={(e) => setDenominazione(e.target.value)}
+            placeholder="Es. Open Dance A.S.D."
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <Label htmlFor="cf-asd">Codice fiscale</Label>
+            <Input
+              id="cf-asd"
+              maxLength={16}
+              value={codiceFiscale}
+              onChange={(e) => setCodiceFiscale(e.target.value.toUpperCase())}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="registro">N. Registro sport (RAS)</Label>
+            <Input id="registro" value={registro} onChange={(e) => setRegistro(e.target.value)} />
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="sede-legale">Sede legale</Label>
+          <Input id="sede-legale" value={sedeLegale} onChange={(e) => setSedeLegale(e.target.value)} />
         </div>
       </div>
       <Button type="submit" disabled={pending} className="w-fit">

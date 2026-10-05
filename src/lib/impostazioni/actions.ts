@@ -24,6 +24,10 @@ export async function aggiornaImpostazioniScuola(input: ImpostazioniScuolaInput)
       indirizzo: parsed.data.indirizzo || null,
       telefono: parsed.data.telefono || null,
       email_contatto: parsed.data.email_contatto || null,
+      denominazione_asd: parsed.data.denominazione_asd || null,
+      codice_fiscale_asd: parsed.data.codice_fiscale_asd?.toUpperCase() || null,
+      sede_legale: parsed.data.sede_legale || null,
+      numero_registro: parsed.data.numero_registro || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);
@@ -33,5 +37,6 @@ export async function aggiornaImpostazioniScuola(input: ImpostazioniScuolaInput)
   }
 
   revalidatePath("/admin/impostazioni");
+  revalidatePath("/", "layout");
   return {};
 }
