@@ -6,7 +6,6 @@ import { cn } from "cn";
 
 const VOCI = [
   { href: "/admin/registri", label: "Panoramica" },
-  { href: "/admin/registri/soci", label: "Soci" },
   { href: "/admin/registri/quote", label: "Quote" },
   { href: "/admin/registri/istanze", label: "Istanze" },
   { href: "/admin/registri/ricevute", label: "Ricevute" },

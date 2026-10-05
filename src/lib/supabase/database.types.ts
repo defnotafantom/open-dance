@@ -55,6 +55,7 @@ export interface Database {
           email: string;
           telefono: string | null;
           ruolo: RuoloEnum;
+          codice_accesso: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
@@ -541,6 +542,24 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["istanze"]["Row"]>;
         Relationships: [];
       };
+      attivita_staff: {
+        Row: {
+          id: string;
+          created_at: string;
+          autore_id: string | null;
+          autore_nome: string;
+          studente_id: string | null;
+          studente_nome: string | null;
+          azione: string;
+          dettaglio: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["attivita_staff"]["Row"]> & {
+          autore_nome: string;
+          azione: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["attivita_staff"]["Row"]>;
+        Relationships: [];
+      };
       richieste_lavori: {
         Row: {
           id: string;
@@ -608,6 +627,10 @@ export interface Database {
       webmaster_ha_notifiche: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      prossimo_codice_accesso: {
+        Args: Record<string, never>;
+        Returns: string;
       };
     };
   };

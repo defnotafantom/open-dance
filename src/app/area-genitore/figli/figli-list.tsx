@@ -12,7 +12,7 @@ export function FigliList({ figli }: { figli: FiglioEsistente[] }) {
   if (figli.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">
-        Non hai ancora aggiunto nessun figlio.
+        Nessun iscritto collegato a questo accesso: rivolgiti alla segreteria.
       </p>
     );
   }

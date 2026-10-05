@@ -19,9 +19,35 @@ export const AGGIORNATO_AL = "2026-10-05";
 export const APPENA_FATTO: VoceFatta[] = [
   {
     data: "2026-10-05",
+    titolo: "Iscritti: un solo elenco",
+    dettaglio:
+      "Studenti e Soci uniti in Iscritti. Ogni scheda ha corsi (con ritiro), quote, ricevute, accesso al sito e storia.",
+    link: "/admin/iscritti",
+  },
+  {
+    data: "2026-10-05",
+    titolo: "Iscrizione solo dalla segreteria, con credenziali generate",
+    dettaglio:
+      "Le famiglie non si registrano più da sole. Lo staff crea l'iscritto e il sito genera codice (OD-0001) e password da stampare. Nessuna email parte.",
+    link: "/admin/iscritti/nuovo",
+  },
+  {
+    data: "2026-10-05",
+    titolo: "Attività staff tracciata",
+    dettaglio:
+      "Ogni passaggio (iscrizioni, corsi, credenziali, incassi, istanze, modifiche) con chi, giorno e ora. Visibile a tutto lo staff, non modificabile.",
+    link: "/admin/attivita",
+  },
+  {
+    data: "2026-10-05",
+    titolo: "Promemoria di pagamento spenti",
+    dettaglio: "Nessuna notifica sui pagamenti alle famiglie finché non è chiaro se si può.",
+  },
+  {
+    data: "2026-10-05",
     titolo: "Stessi numeri ovunque",
     dettaglio:
-      "Panoramica, Registri e area famiglie ora leggono le stesse fonti: quote in ritardo calcolate su oggi, incassi al netto delle restituzioni, istanze chiamate col loro nome anche nei promemoria.",
+      "Panoramica, Registri e area famiglie ora leggono le stesse fonti: quote in ritardo calcolate su oggi, incassi al netto delle restituzioni.",
     link: "/admin",
   },
   {
@@ -40,7 +66,7 @@ export const APPENA_FATTO: VoceFatta[] = [
     titolo: "Scheda unica del socio",
     dettaglio:
       "Un clic sul nome in Registri → Soci: avvisi, anagrafica, referente, corsi, presenze, quote, istanze e ricevute in una pagina.",
-    link: "/admin/registri/soci",
+    link: "/admin/iscritti",
   },
   {
     data: "2026-10-05",
@@ -95,11 +121,6 @@ export const IN_LAVORAZIONE: Voce[] = [];
 
 /** Cose decise che partono appena arriva quello che manca. */
 export const IN_PROGRAMMA: (Voce & { serve: string })[] = [
-  {
-    titolo: "Studenti e Soci in un solo elenco",
-    dettaglio: "Oggi le stesse persone compaiono in due elenchi diversi; diventerebbe uno, con la scheda completa.",
-    serve: "Conferma",
-  },
   {
     titolo: "Prezzi per corso, pacchetti e sconti",
     dettaglio: "Oggi la quota mensile dipende solo da danza / fitness / entrambe.",
@@ -183,6 +204,18 @@ export const IN_CODA: VoceInCoda[] = [
     area: "Insegnanti",
     titolo: "Presenze con QR",
     dettaglio: "L'alunno mostra un codice all'ingresso e la presenza si segna da sola.",
+  },
+  {
+    id: "cambio-password",
+    area: "Famiglie",
+    titolo: "Cambio password al primo accesso",
+    dettaglio: "La famiglia sceglie una password sua la prima volta che entra con quella stampata.",
+  },
+  {
+    id: "promemoria-quote",
+    area: "Famiglie",
+    titolo: "Promemoria quote sul telefono",
+    dettaglio: "Sospesi: si riattivano solo se il commercialista conferma che non ci sono problemi.",
   },
   {
     id: "esporta-tutto",

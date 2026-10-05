@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
 import { login } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export function LoginForm({ registrato }: { registrato: boolean }) {
+export function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
 
   return (
@@ -25,27 +24,20 @@ export function LoginForm({ registrato }: { registrato: boolean }) {
       <CardHeader>
         <CardTitle className="font-display text-2xl uppercase tracking-tight">Accedi</CardTitle>
         <CardDescription>
-          Inserisci le tue credenziali per accedere a Open Dance.
+          Entra con il codice iscritto (es. OD-0012) o con l&apos;email, e la password
+          ricevuta dalla segreteria.
         </CardDescription>
       </CardHeader>
       <form action={action}>
         <CardContent className="flex flex-col gap-4">
-          {registrato && (
-            <Alert>
-              <AlertDescription>
-                Controlla la tua email per confermare la registrazione, poi
-                accedi qui sotto.
-              </AlertDescription>
-            </Alert>
-          )}
           {state?.error && (
             <Alert variant="destructive">
               <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" autoComplete="email" required />
+            <Label htmlFor="email">Codice iscritto o email</Label>
+            <Input id="email" name="email" autoComplete="username" autoCapitalize="none" required />
             {state?.fieldErrors?.email && (
               <p className="text-destructive text-sm">{state.fieldErrors.email[0]}</p>
             )}
@@ -69,13 +61,7 @@ export function LoginForm({ registrato }: { registrato: boolean }) {
             {pending ? "Accesso in corso..." : "Accedi"}
           </Button>
           <div className="flex w-full justify-between text-sm">
-            {REGISTRAZIONI_APERTE ? (
-              <Link href="/registrati" className="text-muted-foreground hover:text-foreground">
-                Crea un account
-              </Link>
-            ) : (
-              <span />
-            )}
+            <span className="text-muted-foreground">Nuovo? L&apos;accesso lo dà la segreteria.</span>
             <Link
               href="/recupera-password"
               className="text-muted-foreground hover:text-foreground"

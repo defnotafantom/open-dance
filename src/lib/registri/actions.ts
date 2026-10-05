@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
+import { traccia } from "@/lib/attivita/traccia";
 import { createClient } from "@/lib/supabase/server";
 import {
   generaQuoteSchema,
@@ -13,7 +14,7 @@ import {
   type UscitaInput,
   type VersamentoInput,
 } from "@/lib/registri/schemas";
-import { nomeMese, stagioneDi } from "@/lib/registri/costanti";
+import { euro, nomeMese, stagioneDi } from "@/lib/registri/costanti";
 import { assicuraQuotaIscrizione } from "@/lib/registri/servizi";
 
 export type ActionResult = { error?: string };
@@ -29,7 +30,7 @@ function aggiornaPagine() {
 // =========================================================
 
 export async function salvaTariffa(input: unknown): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = tariffaSchema.safeParse(input);
   if (!parsed.success) return { error: "Dati del listino non validi." };
 
@@ -42,6 +43,9 @@ export async function salvaTariffa(input: unknown): Promise<ActionResult> {
     );
   if (error) return { error: error.message };
 
+  await traccia(profile, "Listino aggiornato", {
+    dettaglio: `${parsed.data.attivita} · ${parsed.data.voce} · ${parsed.data.stagione} · ${euro(parsed.data.importo)}`,
+  });
   aggiornaPagine();
   return {};
 }
@@ -68,7 +72,7 @@ async function listino(stagione: string) {
 export async function generaQuoteMese(
   input: unknown
 ): Promise<{ error?: string; create?: number; giaPresenti?: number; senzaPrezzo?: number }> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = generaQuoteSchema.safeParse(input);
   if (!parsed.success) return { error: "Mese non valido." };
   const { mese, giorno_scadenza } = parsed.data;
@@ -111,6 +115,9 @@ export async function generaQuoteMese(
   if (nuove.length > 0) {
     const { error } = await supabase.from("pagamenti").insert(nuove);
     if (error) return { error: error.message };
+    await traccia(profile, `Quote di ${nomeMese(mese)} generate`, {
+      dettaglio: `${nuove.length} quote · scadenza ${scadenza.split("-").reverse().join("/")}`,
+    });
   }
 
   aggiornaPagine();
@@ -119,7 +126,7 @@ export async function generaQuoteMese(
 
 /** Quota di iscrizione annuale dal listino, per un socio (una per stagione). */
 export async function creaQuotaIscrizione(studenteId: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const r = await assicuraQuotaIscrizione(await createClient(), studenteId);
   if (!r.creata) {
     return {
@@ -129,6 +136,7 @@ export async function creaQuotaIscrizione(studenteId: string): Promise<ActionRes
           : `Quota non creata: ${r.motivo}.`,
     };
   }
+  await traccia(profile, "Quota d'iscrizione creata", { studenteId });
   aggiornaPagine();
   return {};
 }
@@ -149,7 +157,7 @@ export async function registraVersamento(
   const supabase = await createClient();
   const { data: pagamento } = await supabase
     .from("pagamenti")
-    .select("id")
+    .select("id, studente_id")
     .eq("id", parsed.data.pagamento_id)
     .maybeSingle();
   if (!pagamento) return { error: "Quota non trovata." };
@@ -163,24 +171,35 @@ export async function registraVersamento(
       // anno e numero della ricevuta li assegna il database
       registrato_da: profile.id,
     })
-    .select("id")
+    .select("id, numero, anno")
     .single();
   if (error) return { error: error.message };
 
+  await traccia(profile, "Incasso registrato", {
+    studenteId: pagamento.studente_id,
+    dettaglio: `Ricevuta n. ${data.numero}/${data.anno} · ${euro(parsed.data.importo)} · ${parsed.data.metodo} · ${parsed.data.causale}`,
+  });
   aggiornaPagine();
   return { id: data.id };
 }
 
 export async function annullaVersamento(id: string, motivo: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   if (!motivo.trim()) return { error: "Indica il motivo dell'annullamento." };
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: v, error } = await supabase
     .from("versamenti")
     .update({ annullato: true, motivo_annullamento: motivo.trim() })
-    .eq("id", id);
+    .eq("id", id)
+    .select("numero, anno, importo, pagamenti(studente_id)")
+    .single();
   if (error) return { error: error.message };
+
+  await traccia(profile, "Ricevuta annullata", {
+    studenteId: (v as unknown as { pagamenti: { studente_id: string } | null }).pagamenti?.studente_id,
+    dettaglio: `N. ${v.numero}/${v.anno} · ${euro(Number(v.importo))} · motivo: ${motivo.trim()}`,
+  });
 
   aggiornaPagine();
   return {};
@@ -191,7 +210,7 @@ export async function annullaVersamento(id: string, motivo: string): Promise<Act
 // =========================================================
 
 export async function aggiornaSocio(id: string, input: SocioInput): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = socioSchema.safeParse(input);
   if (!parsed.success) return { error: "Dati del socio non validi." };
 
@@ -200,13 +219,18 @@ export async function aggiornaSocio(id: string, input: SocioInput): Promise<Acti
   if (error) {
     return {
       error: error.message.includes("numero_tessera")
-        ? "Questo numero di tessera è già assegnato a un altro socio."
+        ? "Questo numero di tessera è già assegnato a un altro iscritto."
         : error.message,
     };
   }
 
+  await traccia(profile, "Tesseramento aggiornato", {
+    studenteId: id,
+    dettaglio: `Tessera ${parsed.data.numero_tessera ?? "—"} · ${parsed.data.attivita} · dal ${parsed.data.data_tesseramento.split("-").reverse().join("/")} · ${parsed.data.attivo ? "attivo" : "non attivo"}`,
+  });
+
   aggiornaPagine();
-  revalidatePath("/admin/studenti");
+  revalidatePath("/admin/iscritti", "layout");
   return {};
 }
 
@@ -226,15 +250,26 @@ export async function salvaUscita(id: string | null, input: UscitaInput): Promis
     : await supabase.from("uscite").insert({ ...valori, registrato_da: profile.id });
   if (error) return { error: error.message };
 
+  await traccia(profile, id ? "Spesa modificata" : "Spesa registrata", {
+    dettaglio: `${parsed.data.descrizione} · ${euro(parsed.data.importo)} · ${parsed.data.categoria}`,
+  });
+
   aggiornaPagine();
   return {};
 }
 
 export async function eliminaUscita(id: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
-  const { error } = await supabase.from("uscite").delete().eq("id", id);
+  const { data: u, error } = await supabase
+    .from("uscite")
+    .delete()
+    .eq("id", id)
+    .select("descrizione, importo")
+    .single();
   if (error) return { error: error.message };
+
+  await traccia(profile, "Spesa eliminata", { dettaglio: `${u.descrizione} · ${euro(Number(u.importo))}` });
 
   aggiornaPagine();
   return {};

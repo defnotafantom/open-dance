@@ -1,9 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { GIORNI_SETTIMANA } from "@/lib/corsi/schemas";
 import { WeeklySchedule, type ClasseOrario } from "@/components/schedule/weekly-schedule";
-import { RichiediIscrizioneDialog, type FiglioConStato } from "./richiedi-iscrizione-dialog";
-import { RinnoviDisponibili, type RinnovoDisponibile } from "./rinnovi-disponibili";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default async function OrarioGenitorePage() {
   const supabase = await createClient();
@@ -25,14 +22,6 @@ export default async function OrarioGenitorePage() {
   const insegnanteNomeById = new Map(
     (insegnanti ?? []).map((i) => [i.id, `${i.nome} ${i.cognome}`])
   );
-  const classeById = new Map((classi ?? []).map((c) => [c.id, c]));
-
-  function etichettaClasse(classeId: string) {
-    const c = classeById.get(classeId);
-    if (!c) return "Classe";
-    return `${corsoNomeById.get(c.corso_id) ?? "Corso"} — ${GIORNI_SETTIMANA[c.giorno_settimana]} ${c.orario_inizio.slice(0, 5)} (${c.stagione})`;
-  }
-
   const figliIds = (figli ?? []).map((f) => f.id);
   const { data: iscrizioni } =
     figliIds.length > 0
@@ -40,43 +29,10 @@ export default async function OrarioGenitorePage() {
           .from("iscrizioni")
           .select("id, studente_id, classe_id, stato")
           .in("studente_id", figliIds)
-          .in("stato", ["richiesta", "attiva", "lista_attesa"])
+          .eq("stato", "attiva")
       : { data: [] as { id: string; studente_id: string; classe_id: string; stato: string }[] };
 
   const nomeFiglioById = new Map((figli ?? []).map((f) => [f.id, `${f.nome} ${f.cognome}`]));
-
-  // Rinnovi: per ogni iscrizione attiva, se il corso ha un'altra classe
-  // attiva in una stagione diversa a cui il figlio non e' gia' iscritto o
-  // in attesa, proponiamo il rinnovo con un click.
-  const rinnovi: RinnovoDisponibile[] = [];
-  for (const i of iscrizioni ?? []) {
-    if (i.stato !== "attiva") continue;
-    const classeVecchia = classeById.get(i.classe_id);
-    if (!classeVecchia) continue;
-
-    const candidate = (classi ?? []).filter(
-      (c) =>
-        c.corso_id === classeVecchia.corso_id &&
-        c.id !== classeVecchia.id &&
-        c.stagione !== classeVecchia.stagione
-    );
-
-    for (const nuova of candidate) {
-      const giaRichiesta = (iscrizioni ?? []).some(
-        (altra) => altra.studente_id === i.studente_id && altra.classe_id === nuova.id
-      );
-      if (giaRichiesta) continue;
-
-      rinnovi.push({
-        figlioId: i.studente_id,
-        figlioNome: nomeFiglioById.get(i.studente_id) ?? "—",
-        corsoNome: corsoNomeById.get(nuova.corso_id) ?? "Corso",
-        classeVecchiaLabel: etichettaClasse(classeVecchia.id),
-        classeNuovaId: nuova.id,
-        classeNuovaLabel: etichettaClasse(nuova.id),
-      });
-    }
-  }
 
   const classiOrario: ClasseOrario[] = (classi ?? []).map((c) => ({
     id: c.id,
@@ -95,42 +51,26 @@ export default async function OrarioGenitorePage() {
         <p className="text-destructive text-sm">
           Impossibile caricare l&apos;orario: {error.message}
         </p>
-      ) : (figli ?? []).length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          Aggiungi prima almeno un iscritto/a nella sezione &quot;Iscritti&quot;
-          per poter richiedere un&apos;iscrizione.
-        </p>
       ) : (
         <>
-          <RinnoviDisponibili rinnovi={rinnovi} />
+          <p className="text-muted-foreground max-w-lg text-sm">
+            Tutti i corsi della scuola. Per iscriversi a un corso o cambiarlo basta chiedere in
+            segreteria: l&apos;iscrizione la registra lo staff.
+          </p>
           <WeeklySchedule
             classi={classiOrario}
             azione={(classe) => {
-              const figliConStato: FiglioConStato[] = (figli ?? []).map((f) => {
-                const iscrizione = (iscrizioni ?? []).find(
-                  (i) => i.studente_id === f.id && i.classe_id === classe.id
-                );
-                return {
-                  id: f.id,
-                  nome: f.nome,
-                  cognome: f.cognome,
-                  iscrizioneId: iscrizione?.id,
-                  stato: iscrizione?.stato as "richiesta" | "attiva" | "lista_attesa" | undefined,
-                };
-              });
-
-              return (
-                <RichiediIscrizioneDialog
-                  classeId={classe.id}
-                  classeLabel={classe.corso_nome}
-                  figli={figliConStato}
-                  trigger={
-                    <Button size="sm" variant="outline">
-                      Iscrivi
-                    </Button>
-                  }
-                />
-              );
+              const iscritti = (iscrizioni ?? [])
+                .filter((i) => i.classe_id === classe.id)
+                .map((i) => nomeFiglioById.get(i.studente_id))
+                .filter(Boolean);
+              return iscritti.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {iscritti.map((n) => (
+                    <Badge key={n}>{n}</Badge>
+                  ))}
+                </div>
+              ) : null;
             }}
           />
         </>

@@ -4,8 +4,9 @@ import { AppShell, type NavItem } from "@/components/layout/app-shell";
 const NAV_BASE: NavItem[] = [
   { href: "/admin", label: "Panoramica" },
   { href: "/admin/corsi", label: "Corsi e classi" },
-  { href: "/admin/studenti", label: "Studenti" },
-  { href: "/admin/iscrizioni", label: "Iscrizioni" },
+  { href: "/admin/iscritti", label: "Iscritti" },
+  { href: "/admin/iscrizioni", label: "Liste d'attesa" },
+  { href: "/admin/attivita", label: "Attività staff" },
   { href: "/admin/registri", label: "Registri" },
   { href: "/admin/eventi", label: "Eventi" },
   { href: "/admin/comunicazioni", label: "Comunicazioni" },

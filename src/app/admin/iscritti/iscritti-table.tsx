@@ -30,7 +30,7 @@ type RigaSocio = Socio & {
   avvisi: { tipo: "da_versare" | "da_restituire"; importo: number; scaduto: boolean; voce: string }[];
 };
 
-export function SociTable({ soci }: { soci: RigaSocio[] }) {
+export function IscrittiTable({ soci }: { soci: RigaSocio[] }) {
   const [ricerca, setRicerca] = useState("");
   const [filtro, setFiltro] = useState<"attivi" | "tutti" | "ritardo">("attivi");
 
@@ -59,7 +59,7 @@ export function SociTable({ soci }: { soci: RigaSocio[] }) {
       </div>
 
       {visibili.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Nessun socio.</p>
+        <p className="text-muted-foreground text-sm">Nessun iscritto.</p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibili.map((s) => (
@@ -69,7 +69,7 @@ export function SociTable({ soci }: { soci: RigaSocio[] }) {
                   <p className="font-display text-xs tracking-[0.15em] text-muted-foreground uppercase">
                     Tessera {s.numero_tessera ?? "—"}
                   </p>
-                  <Link href={`/admin/registri/soci/${s.id}`} className="block truncate font-display text-lg uppercase hover:text-primary">
+                  <Link href={`/admin/iscritti/${s.id}`} className="block truncate font-display text-lg uppercase hover:text-primary">
                     {s.nome} {s.cognome}
                   </Link>
                   {s.referente !== `${s.nome} ${s.cognome}` && (
@@ -153,7 +153,7 @@ function ModificaSocio({ socio }: { socio: RigaSocio }) {
     });
     setPending(false);
     if (r.error) return void toast.error(r.error);
-    toast.success("Socio aggiornato.");
+    toast.success("Iscritto aggiornato.");
     setOpen(false);
     router.refresh();
   }
@@ -166,7 +166,7 @@ function ModificaSocio({ socio }: { socio: RigaSocio }) {
           <DialogTitle>
             {socio.nome} {socio.cognome}
           </DialogTitle>
-          <DialogDescription>Dati di tesseramento del socio.</DialogDescription>
+          <DialogDescription>Dati di tesseramento.</DialogDescription>
         </DialogHeader>
         <form onSubmit={salva} className="flex flex-col gap-4">
           <div className="grid gap-2">
@@ -201,7 +201,7 @@ function ModificaSocio({ socio }: { socio: RigaSocio }) {
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={attivo} onChange={(e) => setAttivo(e.target.checked)} />
-            Socio attivo (riceve le quote mensili)
+            Attivo (riceve le quote mensili)
           </label>
           <DialogFooter>
             <Button type="submit" disabled={pending}>

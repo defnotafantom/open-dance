@@ -4,13 +4,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { areaPerRuolo } from "@/lib/auth/dal";
-import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
+import { normalizzaCodice } from "@/lib/iscritti/credenziali";
 import {
   loginSchema,
-  registratiSchema,
   recuperaPasswordSchema,
   nuovaPasswordSchema,
-  VERSIONE_INFORMATIVA_PRIVACY,
 } from "@/lib/auth/schemas";
 
 export type FormState =
@@ -34,11 +32,23 @@ export async function login(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
+  // Senza "@" e' un codice iscritto: si risale all'email dell'account.
+  // Stesso messaggio d'errore in ogni caso, per non rivelare quali codici esistono.
+  let email = parsed.data.email.toLowerCase();
+  if (!email.includes("@")) {
+    const codice = normalizzaCodice(email);
+    const { data: profilo } = codice
+      ? await createAdminClient().from("profiles").select("email").eq("codice_accesso", codice).maybeSingle()
+      : { data: null };
+    if (!profilo) return { error: "Codice o password non corretti." };
+    email = profilo.email;
+  }
+
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: parsed.data.password });
 
   if (error || !data.user) {
-    return { error: "Email o password non corrette." };
+    return { error: "Codice/email o password non corretti." };
   }
 
   // Verifica in due passaggi attiva: prima del gestionale serve il codice.
@@ -54,71 +64,6 @@ export async function login(
     .single();
 
   redirect(profile ? areaPerRuolo(profile.ruolo) : "/");
-}
-
-export async function registrati(
-  _state: FormState,
-  formData: FormData
-): Promise<FormState> {
-  if (!REGISTRAZIONI_APERTE) {
-    return { error: "Le registrazioni online non sono ancora aperte: contatta la scuola." };
-  }
-
-  const parsed = registratiSchema.safeParse({
-    nome: formData.get("nome"),
-    cognome: formData.get("cognome"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confermaPassword: formData.get("confermaPassword"),
-    accettaPrivacy: formData.get("accettaPrivacy") === "on",
-    accettaFotoVideo: formData.get("accettaFotoVideo") === "on",
-  });
-
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: {
-        nome: parsed.data.nome,
-        cognome: parsed.data.cognome,
-      },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  if (data.user) {
-    // Client con service-role: il consenso va registrato anche se la
-    // conferma email e' attiva e non esiste ancora una sessione.
-    const admin = createAdminClient();
-    await admin.from("consensi_privacy").insert([
-      {
-        profilo_id: data.user.id,
-        tipo_consenso: "trattamento_dati",
-        concesso: true,
-        versione_informativa: VERSIONE_INFORMATIVA_PRIVACY,
-      },
-      {
-        profilo_id: data.user.id,
-        tipo_consenso: "foto_video",
-        concesso: parsed.data.accettaFotoVideo,
-        versione_informativa: VERSIONE_INFORMATIVA_PRIVACY,
-      },
-    ]);
-  }
-
-  if (!data.session) {
-    redirect("/login?registrato=1");
-  }
-
-  redirect("/area-genitore");
 }
 
 export async function logout() {

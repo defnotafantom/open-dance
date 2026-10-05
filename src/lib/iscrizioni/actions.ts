@@ -4,82 +4,31 @@ import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { assicuraQuotaIscrizione } from "@/lib/registri/servizi";
+import { traccia } from "@/lib/attivita/traccia";
+import { nomeClasse } from "@/lib/iscrizioni/classi";
+
+// Le iscrizioni le registra solo lo staff (Iscritti → Nuovo iscritto);
+// qui si gestiscono quelle gia' esistenti. Ogni passaggio va nel registro.
 
 export type ActionResult = { error?: string };
 
-export async function richiediIscrizione(
-  studenteId: string,
-  classeId: string
-): Promise<ActionResult> {
-  const supabase = await createClient();
-
-  const { data: esistente } = await supabase
-    .from("iscrizioni")
-    .select("id")
-    .eq("studente_id", studenteId)
-    .eq("classe_id", classeId)
-    .in("stato", ["richiesta", "attiva", "lista_attesa"])
-    .maybeSingle();
-
-  if (esistente) {
-    return { error: "Esiste gia' un'iscrizione o una richiesta per questa classe." };
-  }
-
-  // Se la classe ha raggiunto la capienza massima, la richiesta va in lista
-  // d'attesa invece che nella coda di approvazione ordinaria.
-  const { data: classe } = await supabase
-    .from("classi")
-    .select("capienza_max")
-    .eq("id", classeId)
-    .single();
-
-  let stato: "richiesta" | "lista_attesa" = "richiesta";
-  if (classe?.capienza_max) {
-    const { count } = await supabase
-      .from("iscrizioni")
-      .select("id", { count: "exact", head: true })
-      .eq("classe_id", classeId)
-      .eq("stato", "attiva");
-    if ((count ?? 0) >= classe.capienza_max) {
-      stato = "lista_attesa";
-    }
-  }
-
-  const { error } = await supabase.from("iscrizioni").insert({
-    studente_id: studenteId,
-    classe_id: classeId,
-    stato,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/area-genitore/orario");
+function aggiorna(studenteId: string) {
   revalidatePath("/admin/iscrizioni");
-  return {};
+  revalidatePath(`/admin/iscritti/${studenteId}`);
+  revalidatePath("/admin/attivita");
+  revalidatePath("/area-genitore/orario");
+  revalidatePath("/admin/registri", "layout");
 }
 
-export async function ritiraRichiesta(iscrizioneId: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  const { error } = await supabase.from("iscrizioni").delete().eq("id", iscrizioneId);
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/area-genitore/orario");
-  revalidatePath("/admin/iscrizioni");
-  return {};
-}
-
+/** Da lista d'attesa (o vecchia richiesta) ad attiva. */
 export async function approvaIscrizione(iscrizioneId: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
   const { data: iscrizione, error } = await supabase
     .from("iscrizioni")
     .update({ stato: "attiva" })
     .eq("id", iscrizioneId)
-    .select("studente_id")
+    .select("studente_id, classe_id")
     .single();
 
   if (error) {
@@ -88,21 +37,54 @@ export async function approvaIscrizione(iscrizioneId: string): Promise<ActionRes
 
   // Iscrizione attiva = socio della stagione: quota d'iscrizione dal listino.
   await assicuraQuotaIscrizione(supabase, iscrizione.studente_id);
+  await traccia(profile, "Iscrizione attivata", {
+    studenteId: iscrizione.studente_id,
+    dettaglio: await nomeClasse(iscrizione.classe_id),
+  });
 
-  revalidatePath("/admin/iscrizioni");
-  revalidatePath("/area-genitore/orario");
-  revalidatePath("/admin/registri", "layout");
+  aggiorna(iscrizione.studente_id);
   return {};
 }
 
 export async function rifiutaIscrizione(iscrizioneId: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
-  const { error } = await supabase.from("iscrizioni").delete().eq("id", iscrizioneId);
+  const { data: iscrizione, error } = await supabase
+    .from("iscrizioni")
+    .delete()
+    .eq("id", iscrizioneId)
+    .select("studente_id, classe_id")
+    .single();
   if (error) {
     return { error: error.message };
   }
 
-  revalidatePath("/admin/iscrizioni");
+  await traccia(profile, "Richiesta di iscrizione rifiutata", {
+    studenteId: iscrizione.studente_id,
+    dettaglio: await nomeClasse(iscrizione.classe_id),
+  });
+  aggiorna(iscrizione.studente_id);
+  return {};
+}
+
+/** Ritiro da un corso: l'iscrizione resta nello storico come terminata. */
+export async function terminaIscrizione(iscrizioneId: string): Promise<ActionResult> {
+  const profile = await requireRuolo(RUOLI_STAFF);
+  const supabase = await createClient();
+  const { data: iscrizione, error } = await supabase
+    .from("iscrizioni")
+    .update({ stato: "terminata" })
+    .eq("id", iscrizioneId)
+    .select("studente_id, classe_id")
+    .single();
+  if (error) {
+    return { error: error.message };
+  }
+
+  await traccia(profile, "Ritirato dal corso", {
+    studenteId: iscrizione.studente_id,
+    dettaglio: await nomeClasse(iscrizione.classe_id),
+  });
+  aggiorna(iscrizione.studente_id);
   return {};
 }

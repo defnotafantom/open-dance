@@ -74,23 +74,28 @@ export default async function IscrizioniPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="font-display text-3xl uppercase tracking-tight">Iscrizioni in attesa</h1>
-          <Button
-            size="sm"
-            variant="outline"
-            nativeButton={false}
-            render={<Link href="/admin/iscrizioni/nuova">+ Nuova iscrizione manuale</Link>}
-          />
-        </div>
-        <IscrizioniTable richieste={aRighe("richiesta")} />
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="font-display text-3xl uppercase tracking-tight">Liste d&apos;attesa</h1>
+        <Button
+          size="sm"
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/admin/iscritti/nuovo">+ Nuovo iscritto</Link>}
+        />
       </div>
+      {/* Richieste arrivate quando le famiglie potevano ancora chiederle dal sito. */}
+      {aRighe("richiesta").length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h2 className="font-display text-xl uppercase tracking-tight">Vecchie richieste dal sito</h2>
+          <IscrizioniTable richieste={aRighe("richiesta")} />
+        </div>
+      )}
       <div className="flex flex-col gap-4">
         <div>
           <h2 className="font-display text-xl uppercase tracking-tight">Lista d&apos;attesa</h2>
           <p className="text-muted-foreground text-sm">
-            Richieste arrivate quando la classe aveva gia&apos; raggiunto la capienza massima.
+            Iscritti messi in attesa perché la classe era piena. &quot;Promuovi&quot; li iscrive
+            al corso (con la quota d&apos;iscrizione), &quot;Rimuovi&quot; li toglie dalla lista.
           </p>
         </div>
         <IscrizioniTable

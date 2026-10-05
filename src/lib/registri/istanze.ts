@@ -5,6 +5,8 @@ import * as z from "zod";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { credito, statoQuota } from "@/lib/registri/stato";
+import { euro } from "@/lib/registri/costanti";
+import { traccia } from "@/lib/attivita/traccia";
 
 export type ActionResult = { error?: string };
 
@@ -43,12 +45,15 @@ export async function creaIstanza(input: unknown): Promise<{ error?: string; id?
     .single();
   if (error) return { error: error.message };
 
+  await traccia(profile, "Istanza creata", {
+    dettaglio: `${parsed.data.nome}${parsed.data.importo_predefinito != null ? ` · ${euro(parsed.data.importo_predefinito)} a testa` : ""} · ${parsed.data.scadenza ? `scade il ${parsed.data.scadenza.split("-").reverse().join("/")}` : "nessuna scadenza"}`,
+  });
   aggiorna();
   return { id: istanza.id };
 }
 
 export async function aggiornaIstanza(id: string, input: unknown, chiusa: boolean): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = istanzaSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dati non validi." };
 
@@ -65,6 +70,7 @@ export async function aggiornaIstanza(id: string, input: unknown, chiusa: boolea
     .update({ data_scadenza: parsed.data.scadenza })
     .eq("istanza_id", id);
 
+  await traccia(profile, chiusa ? "Istanza chiusa" : "Istanza modificata", { dettaglio: parsed.data.nome });
   aggiorna(id);
   return {};
 }
@@ -74,7 +80,7 @@ const partecipantiSchema = z
   .min(1, { error: "Scegli almeno un alunno." });
 
 export async function aggiungiPartecipanti(istanzaId: string, input: unknown): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const parsed = partecipantiSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dati non validi." };
 
@@ -103,19 +109,25 @@ export async function aggiungiPartecipanti(istanzaId: string, input: unknown): P
   const { error } = await supabase.from("pagamenti").insert(nuove);
   if (error) return { error: error.message };
 
+  for (const n of nuove) {
+    await traccia(profile, "Aggiunto a un'istanza", {
+      studenteId: n.studente_id,
+      dettaglio: `${istanza.nome} · ${euro(n.importo_dovuto)}`,
+    });
+  }
   aggiorna(istanzaId);
   return {};
 }
 
 /** Cambia quanto deve un alunno in questa istanza (dati variabili per alunno). */
 export async function aggiornaDovuto(pagamentoId: string, importo: number, nota: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   if (!(importo >= 0)) return { error: "Importo non valido." };
 
   const supabase = await createClient();
   const { data: voce } = await supabase
     .from("pagamenti")
-    .select("importo_pagato, data_scadenza, istanza_id")
+    .select("importo_pagato, importo_dovuto, data_scadenza, istanza_id, studente_id, note")
     .eq("id", pagamentoId)
     .maybeSingle();
   if (!voce) return { error: "Voce non trovata." };
@@ -134,14 +146,23 @@ export async function aggiornaDovuto(pagamentoId: string, importo: number, nota:
     .eq("id", pagamentoId);
   if (error) return { error: error.message };
 
+  await traccia(profile, "Importo dovuto cambiato", {
+    studenteId: voce.studente_id,
+    dettaglio: `${voce.note ?? "Voce"} · ${euro(Number(voce.importo_dovuto))} → ${euro(importo)}`,
+  });
   aggiorna(voce.istanza_id ?? undefined);
   return {};
 }
 
 export async function rimuoviPartecipante(pagamentoId: string, istanzaId: string): Promise<ActionResult> {
-  await requireRuolo(RUOLI_STAFF);
+  const profile = await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
-  const { error } = await supabase.from("pagamenti").delete().eq("id", pagamentoId);
+  const { data: voce, error } = await supabase
+    .from("pagamenti")
+    .delete()
+    .eq("id", pagamentoId)
+    .select("studente_id, note")
+    .single();
   if (error) {
     return {
       error:
@@ -150,6 +171,7 @@ export async function rimuoviPartecipante(pagamentoId: string, istanzaId: string
           : error.message,
     };
   }
+  await traccia(profile, "Tolto da un'istanza", { studenteId: voce.studente_id, dettaglio: voce.note });
   aggiorna(istanzaId);
   return {};
 }
@@ -172,7 +194,7 @@ export async function registraRimborso(input: unknown): Promise<ActionResult> {
   const supabase = await createClient();
   const { data: voce } = await supabase
     .from("pagamenti")
-    .select("importo_dovuto, importo_pagato, importo_rimborsato, istanza_id")
+    .select("importo_dovuto, importo_pagato, importo_rimborsato, istanza_id, studente_id, note")
     .eq("id", parsed.data.pagamento_id)
     .maybeSingle();
   if (!voce) return { error: "Voce non trovata." };
@@ -193,6 +215,10 @@ export async function registraRimborso(input: unknown): Promise<ActionResult> {
   });
   if (error) return { error: error.message };
 
+  await traccia(profile, "Restituzione registrata", {
+    studenteId: voce.studente_id,
+    dettaglio: `${voce.note ?? "Voce"} · ${euro(parsed.data.importo)} a ${parsed.data.beneficiario} · ${parsed.data.metodo}`,
+  });
   aggiorna(voce.istanza_id ?? undefined);
   return {};
 }

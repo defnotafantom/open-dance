@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cercaReferentePerEmail, creaIscrizioneManuale } from "@/lib/staff/actions";
 import type { ReferenteTrovato } from "@/lib/staff/schemas";
+import { CredenzialiCard, type CredenzialiMostrate } from "@/components/iscritti/credenziali-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,17 +22,31 @@ import {
 
 export type ClasseOpzione = { id: string; label: string };
 
-export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
+export function NuovaIscrizioneForm({
+  classi,
+  emailIniziale = "",
+}: {
+  classi: ClasseOpzione[];
+  emailIniziale?: string;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [esito, setEsito] = useState<{
+    studenteId: string;
+    credenziali?: CredenzialiMostrate;
+    inAttesa: number;
+  } | null>(null);
 
   // Passo 1: referente (chi gestisce l'account — genitore o allievo maggiorenne).
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(emailIniziale);
   const [ricercaFatta, setRicercaFatta] = useState(false);
   const [referenteTrovato, setReferenteTrovato] = useState<ReferenteTrovato | null>(null);
   const [nuovoReferenteNome, setNuovoReferenteNome] = useState("");
   const [nuovoReferenteCognome, setNuovoReferenteCognome] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [privacyFirmata, setPrivacyFirmata] = useState(false);
+  const [consensoFoto, setConsensoFoto] = useState(false);
 
   // Passo 2: iscritto (nuovo o gia' presente sotto il referente trovato).
   const [studenteEsistenteId, setStudenteEsistenteId] = useState("");
@@ -59,6 +75,20 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
     setStudenteEsistenteId(risultato?.figli[0]?.id ?? "");
   }
 
+  // Arrivando dalla scheda di un iscritto ("Iscrivi ad altri corsi") la
+  // famiglia e' gia' nota: la si cerca subito.
+  const cercato = useRef(false);
+  useEffect(() => {
+    if (!emailIniziale || cercato.current) return;
+    cercato.current = true;
+    cercaReferentePerEmail(emailIniziale).then((risultato) => {
+      setReferenteTrovato(risultato);
+      setRicercaFatta(true);
+      setNuovoIscritto(!risultato || risultato.figli.length === 0);
+      setStudenteEsistenteId(risultato?.figli[0]?.id ?? "");
+    });
+  }, [emailIniziale]);
+
   function resetRicerca() {
     setRicercaFatta(false);
     setReferenteTrovato(null);
@@ -76,6 +106,10 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
     }
     if (!referenteTrovato && (!nuovoReferenteNome.trim() || !nuovoReferenteCognome.trim())) {
       setError("Inserisci nome e cognome del nuovo referente.");
+      return;
+    }
+    if (!referenteTrovato && !privacyFirmata) {
+      setError("Serve il modulo privacy firmato prima di creare l'account.");
       return;
     }
     if (classiScelte.length === 0) {
@@ -100,6 +134,9 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
             email: email.trim().toLowerCase(),
             nome: nuovoReferenteNome.trim(),
             cognome: nuovoReferenteCognome.trim(),
+            telefono: telefono.trim() || undefined,
+            consenso_privacy: true as const,
+            consenso_foto: consensoFoto,
           },
       studente: nuovoIscritto
         ? {
@@ -119,16 +156,44 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
 
     if (result.error) {
       setError(result.error);
+      // L'account puo' essere stato creato anche se un passaggio dopo non e'
+      // riuscito: le credenziali vanno comunque mostrate.
+      if (result.credenziali) setEsito({ studenteId: result.studenteId ?? "", credenziali: result.credenziali, inAttesa: 0 });
       return;
     }
 
-    toast.success(
-      referenteTrovato
-        ? "Iscrizione registrata."
-        : "Iscrizione registrata. Al referente e' stata inviata un'email di invito per impostare la password."
-    );
-    router.push("/admin/iscrizioni");
+    toast.success("Iscrizione registrata.");
+    setEsito({ studenteId: result.studenteId ?? "", credenziali: result.credenziali, inAttesa: result.inAttesa ?? 0 });
     router.refresh();
+  }
+
+  if (esito && !error) {
+    return (
+      <div className="flex max-w-xl flex-col gap-4">
+        <Alert>
+          <AlertDescription>
+            Iscrizione completata e registrata nella storia dell&apos;iscritto.
+            {esito.inAttesa > 0 &&
+              ` ${esito.inAttesa === 1 ? "Una classe era piena" : `${esito.inAttesa} classi erano piene`}: messo in lista d'attesa.`}
+          </AlertDescription>
+        </Alert>
+        {esito.credenziali ? (
+          <CredenzialiCard credenziali={esito.credenziali} />
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            La famiglia aveva già un accesso: usa le stesse credenziali.
+          </p>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {esito.studenteId && (
+            <Button nativeButton={false} render={<Link href={`/admin/iscritti/${esito.studenteId}`}>Apri la scheda</Link>} />
+          )}
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Nuova iscrizione
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -168,8 +233,8 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
         {ricercaFatta && !referenteTrovato && (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">
-              Nessun account con questa email: ne verra&apos; creato uno nuovo e
-              riceverà un&apos;email per impostare la password.
+              Nessun account con questa email: ne verrà creato uno nuovo con codice e
+              password generati, da consegnare alla famiglia. Nessuna email viene inviata.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2">
@@ -189,6 +254,20 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
                 />
               </div>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="ref-tel">Telefono (facoltativo)</Label>
+              <Input id="ref-tel" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+            </div>
+            <label className="flex items-start gap-2 text-sm">
+              <Checkbox checked={privacyFirmata} onCheckedChange={(v) => setPrivacyFirmata(v === true)} />
+              <span>
+                Modulo privacy firmato e conservato in segreteria <span className="text-primary">(obbligatorio)</span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm">
+              <Checkbox checked={consensoFoto} onCheckedChange={(v) => setConsensoFoto(v === true)} />
+              <span>Ha dato il consenso a foto e video</span>
+            </label>
           </div>
         )}
       </div>

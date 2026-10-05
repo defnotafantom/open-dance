@@ -7,7 +7,6 @@ import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
 import { OrbNav, type NavItem } from "@/components/layout/orb-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Eyebrow, NAV_PUBBLICO, PublicFooter } from "@/components/marketing/public-page";
-import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
 import { ANNI_SPECIALE, ANNO_FONDAZIONE, TAPPE_PERCORSO } from "@/lib/sito/costanti";
 import {
   ArrowRightIcon,
@@ -32,7 +31,6 @@ export type DatiHome = {
 
 const NAV_HOME: NavItem[] = [
   ...NAV_PUBBLICO.filter((i) => i.href !== "/"),
-  ...(REGISTRAZIONI_APERTE ? [{ href: "/registrati", label: "Registrati" }] : []),
 ];
 
 const EASE = [0.16, 1, 0.3, 1] as const;

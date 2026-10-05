@@ -6,7 +6,7 @@ export default function RegistriLayout({ children }: { children: React.ReactNode
       <div>
         <h1 className="font-display text-3xl uppercase">Registri</h1>
         <p className="text-muted-foreground max-w-2xl text-sm">
-          Soci, quote, ricevute e rendiconto dell&apos;associazione. Visibili solo allo staff.
+          Quote, istanze, ricevute e rendiconto dell&apos;associazione. Visibili solo allo staff.
         </p>
       </div>
       <RegistriNav />

@@ -7,6 +7,10 @@ export const referenteSchema = z.discriminatedUnion("modalita", [
     email: z.email({ error: "Inserisci un'email valida." }),
     nome: z.string().min(1, { error: "Inserisci il nome del referente." }),
     cognome: z.string().min(1, { error: "Inserisci il cognome del referente." }),
+    telefono: z.string().max(30).optional(),
+    // Modulo privacy firmato in segreteria: senza, l'account non si crea.
+    consenso_privacy: z.literal(true, { error: "Serve il modulo privacy firmato." }),
+    consenso_foto: z.boolean(),
   }),
 ]);
 

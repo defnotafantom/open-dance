@@ -62,9 +62,9 @@ export default async function AdminPage() {
   const inRitardo = aperte.filter((q) => q.stato === "scaduto");
 
   const stats = [
-    { titolo: "Soci attivi", valore: soci.count ?? "—", href: "/admin/registri/soci" },
+    { titolo: "Iscritti attivi", valore: soci.count ?? "—", href: "/admin/iscritti" },
     { titolo: "Classi attive", valore: classi.count ?? "—", href: "/admin/corsi" },
-    { titolo: "Iscrizioni in attesa", valore: richieste.count ?? "—", href: "/admin/iscrizioni", allarme: (richieste.count ?? 0) > 0 },
+    { titolo: "In lista d'attesa", valore: richieste.count ?? "—", href: "/admin/iscrizioni", allarme: (richieste.count ?? 0) > 0 },
     {
       titolo: "Quote in ritardo",
       valore: inRitardo.length,

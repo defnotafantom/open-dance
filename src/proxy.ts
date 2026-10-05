@@ -12,7 +12,7 @@ import {
 import type { Database } from "@/lib/supabase/database.types";
 
 const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore", "/stampa"];
-const SOLO_OSPITI = ["/login", "/registrati"];
+const SOLO_OSPITI = ["/login"];
 
 // Deve restare in sync con il bypass temporaneo in src/lib/auth/dal.ts:
 // quando attivo, lascia passare tutte le richieste senza controllare la
