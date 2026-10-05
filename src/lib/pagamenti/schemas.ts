@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import * as z from "zod";
 
 export const pagamentoSchema = z.object({
@@ -40,7 +41,7 @@ export function calcolaStato(input: {
   if (input.importo_pagato > 0) {
     return "parziale";
   }
-  const oggi = new Date().toISOString().slice(0, 10);
+  const oggi = giornoRoma();
   if (input.data_scadenza && input.data_scadenza < oggi) {
     return "scaduto";
   }

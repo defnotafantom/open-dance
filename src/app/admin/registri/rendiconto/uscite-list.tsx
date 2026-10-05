@@ -1,5 +1,6 @@
 "use client";
 
+import { giornoRoma } from "@/lib/date";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -92,7 +93,7 @@ function UscitaDialog({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
-  const [data, setData] = useState(uscita?.data ?? new Date().toISOString().slice(0, 10));
+  const [data, setData] = useState(uscita?.data ?? giornoRoma());
   const [categoria, setCategoria] = useState(uscita?.categoria ?? categorie[0]);
   const [descrizione, setDescrizione] = useState(uscita?.descrizione ?? "");
   const [importo, setImporto] = useState(uscita ? String(uscita.importo) : "");

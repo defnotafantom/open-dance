@@ -8,6 +8,7 @@ import { ATTIVITA, euro } from "@/lib/registri/costanti";
 import type { Socio } from "@/lib/registri/dati";
 import type { AttivitaSocio } from "@/lib/supabase/database.types";
 import { TableSearch } from "@/components/table-search";
+import { AvvisoChip } from "@/components/registri/avviso-chip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-type RigaSocio = Socio & { ritardo: number; aperto: number };
+type RigaSocio = Socio & {
+  ritardo: number;
+  aperto: number;
+  avvisi: { tipo: "da_versare" | "da_restituire"; importo: number; scaduto: boolean; voce: string }[];
+};
 
 export function SociTable({ soci }: { soci: RigaSocio[] }) {
   const [ricerca, setRicerca] = useState("");
@@ -75,6 +80,13 @@ export function SociTable({ soci }: { soci: RigaSocio[] }) {
                   {!s.attivo && <Badge variant="secondary">Non attivo</Badge>}
                 </div>
               </div>
+              {s.avvisi.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {s.avvisi.map((a, i) => (
+                    <AvvisoChip key={i} avviso={a} contesto={a.voce} />
+                  ))}
+                </div>
+              )}
               <div className="flex items-center justify-between text-sm">
                 {s.ritardo > 0 ? (
                   <span className="font-medium text-primary">

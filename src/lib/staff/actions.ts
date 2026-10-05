@@ -54,7 +54,7 @@ export async function creaIscrizioneManuale(input: IscrizioneManualeInput): Prom
   if (!parsed.success) {
     return { error: "Dati non validi." };
   }
-  const { referente, studente, classe_id, quota_concordata } = parsed.data;
+  const { referente, studente, classi_ids, quota_concordata } = parsed.data;
   const admin = createAdminClient();
 
   let referenteId: string;
@@ -92,6 +92,7 @@ export async function creaIscrizioneManuale(input: IscrizioneManualeInput): Prom
         is_adulto: studente.is_adulto,
         genitore_id: studente.is_adulto ? null : referenteId,
         profilo_id: studente.is_adulto ? referenteId : null,
+        attivita: studente.attivita,
       })
       .select("id")
       .single();
@@ -102,18 +103,31 @@ export async function creaIscrizioneManuale(input: IscrizioneManualeInput): Prom
     studenteId = nuovoStudente.id;
   }
 
-  const { error: iscrizioneError } = await admin.from("iscrizioni").insert({
-    studente_id: studenteId,
-    classe_id,
-    stato: "attiva",
-    quota_concordata: quota_concordata ?? null,
-  });
+  // Salta le classi a cui l'iscritto e' gia' iscritto (attivo o in attesa).
+  const { data: giaIscritto } = await admin
+    .from("iscrizioni")
+    .select("classe_id")
+    .eq("studente_id", studenteId)
+    .in("stato", ["attiva", "richiesta"]);
+  const gia = new Set((giaIscritto ?? []).map((i) => i.classe_id));
+  const nuove = [...new Set(classi_ids)].filter((id) => !gia.has(id));
 
-  if (iscrizioneError) {
-    return { error: iscrizioneError.message };
+  if (nuove.length > 0) {
+    const { error: iscrizioneError } = await admin.from("iscrizioni").insert(
+      nuove.map((classe_id) => ({
+        studente_id: studenteId,
+        classe_id,
+        stato: "attiva" as const,
+        quota_concordata: quota_concordata ?? null,
+      }))
+    );
+    if (iscrizioneError) {
+      return { error: iscrizioneError.message };
+    }
   }
 
   revalidatePath("/admin/iscrizioni");
   revalidatePath("/admin/studenti");
+  revalidatePath("/admin/registri", "layout");
   return {};
 }

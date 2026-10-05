@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import Link from "next/link";
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -41,9 +42,9 @@ export default async function PresenzePage() {
   await assicuraLezioni(classeIds, 1, 2);
 
   const oggi = new Date();
-  const dataOggi = oggi.toISOString().slice(0, 10);
-  const daData = new Date(oggi.getTime() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
-  const aData = new Date(oggi.getTime() + 14 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const dataOggi = giornoRoma(oggi);
+  const daData = giornoRoma(new Date(oggi.getTime() - 7 * 24 * 3600 * 1000));
+  const aData = giornoRoma(new Date(oggi.getTime() + 14 * 24 * 3600 * 1000));
 
   const { data: lezioni, error } = await supabase
     .from("lezioni")

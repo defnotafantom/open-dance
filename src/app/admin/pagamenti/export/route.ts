@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { TIPO_LABEL, METODO_LABEL } from "@/lib/pagamenti/schemas";
@@ -66,7 +67,7 @@ export async function GET() {
   return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="pagamenti_${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Disposition": `attachment; filename="pagamenti_${giornoRoma()}.csv"`,
     },
   });
 }

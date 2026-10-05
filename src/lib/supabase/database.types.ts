@@ -196,6 +196,8 @@ export interface Database {
           registrato_da: string | null;
           promemoria_inviato_at: string | null;
           competenza: string | null;
+          istanza_id: string | null;
+          importo_rimborsato: number;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["pagamenti"]["Row"]> & {
@@ -522,6 +524,44 @@ export interface Database {
           nome: string;
         };
         Update: Partial<Database["public"]["Tables"]["accessi_sito"]["Row"]>;
+        Relationships: [];
+      };
+      istanze: {
+        Row: {
+          id: string;
+          nome: string;
+          descrizione: string | null;
+          importo_predefinito: number | null;
+          scadenza: string | null;
+          chiusa: boolean;
+          creato_da: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["istanze"]["Row"]> & { nome: string };
+        Update: Partial<Database["public"]["Tables"]["istanze"]["Row"]>;
+        Relationships: [];
+      };
+      rimborsi: {
+        Row: {
+          id: string;
+          pagamento_id: string;
+          importo: number;
+          data: string;
+          metodo: PagamentoMetodoEnum;
+          beneficiario: string;
+          note: string | null;
+          annullato: boolean;
+          motivo_annullamento: string | null;
+          registrato_da: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["rimborsi"]["Row"]> & {
+          pagamento_id: string;
+          importo: number;
+          metodo: PagamentoMetodoEnum;
+          beneficiario: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["rimborsi"]["Row"]>;
         Relationships: [];
       };
       uscite: {

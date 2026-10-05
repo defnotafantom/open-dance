@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import Link from "next/link";
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -5,6 +6,9 @@ import { assicuraLezioni } from "@/lib/lezioni/actions";
 import { contaComunicazioniNonLette } from "@/lib/comunicazioni/actions";
 import { GIORNI_SETTIMANA } from "@/lib/corsi/schemas";
 import { Button } from "@/components/ui/button";
+import { AvvisoChip } from "@/components/registri/avviso-chip";
+import { avvisiVoce } from "@/lib/registri/stato";
+import { TIPO_LABEL } from "@/lib/pagamenti/schemas";
 import { CalendarDays, MapPin, MessageSquareWarning, Phone, Users, Wallet } from "lucide-react";
 
 export default async function AreaGenitorePage() {
@@ -36,12 +40,37 @@ export default async function AreaGenitorePage() {
         ])
       : [vuoto, vuoto, await contaComunicazioniNonLette()];
 
+  // Avvisi permanenti per ogni figlio: restano finche' la condizione non e'
+  // soddisfatta (quota versata, eccedenza restituita), poi spariscono.
+  const { data: vociAvvisi } =
+    figliIds.length > 0
+      ? await supabase
+          .from("pagamenti")
+          .select("id, studente_id, tipo, note, importo_dovuto, importo_pagato, importo_rimborsato, data_scadenza")
+          .in("studente_id", figliIds)
+      : { data: [] };
+  const avvisiPerFiglio = figli
+    .map((f) => ({
+      figlio: f,
+      avvisi: (vociAvvisi ?? [])
+        .filter((v) => v.studente_id === f.id)
+        .flatMap((v) =>
+          avvisiVoce({
+            importo_dovuto: Number(v.importo_dovuto),
+            importo_pagato: Number(v.importo_pagato),
+            importo_rimborsato: Number(v.importo_rimborsato),
+            data_scadenza: v.data_scadenza,
+          }).map((a) => ({ avviso: a, voce: v.note || TIPO_LABEL[v.tipo], id: `${v.id}-${a.tipo}` }))
+        ),
+    }))
+    .filter((x) => x.avvisi.length > 0);
+
   const classeIds = [...new Set((iscrizioni ?? []).map((i) => i.classe_id as string))];
   await assicuraLezioni(classeIds, 0, 2);
 
   const adesso = new Date();
-  const oggi = adesso.toISOString().slice(0, 10);
-  const tra7Giorni = new Date(adesso.getTime() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const oggi = giornoRoma(adesso);
+  const tra7Giorni = giornoRoma(new Date(adesso.getTime() + 7 * 24 * 3600 * 1000));
 
   const { data: prossimeLezioni } =
     classeIds.length > 0
@@ -96,6 +125,24 @@ export default async function AreaGenitorePage() {
           Il riepilogo della tua famiglia a Open Dance.
         </p>
       </div>
+
+      {avvisiPerFiglio.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-xl panel-3d p-4">
+          <p className="font-display text-sm tracking-[0.15em] uppercase">Da sistemare</p>
+          {avvisiPerFiglio.map(({ figlio, avvisi }) => (
+            <div key={figlio.id} className="flex flex-col gap-1.5">
+              <p className="text-sm font-medium">
+                {figlio.nome} {figlio.cognome}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {avvisi.map((a) => (
+                  <AvvisoChip key={a.id} avviso={a.avviso} contesto={a.voce} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ icona: Icona, titolo, valore }) => (

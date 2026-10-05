@@ -1,5 +1,6 @@
 "use client";
 
+import { giornoRoma } from "@/lib/date";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { eliminaDocumento, urlFirmatoDocumento } from "@/lib/documenti/actions";
@@ -27,7 +28,7 @@ export type DocumentoRiga = {
 function BadgeScadenza({ dataScadenza }: { dataScadenza: string | null }) {
   if (!dataScadenza) return null;
   const adesso = new Date();
-  const oggi = adesso.toISOString().slice(0, 10);
+  const oggi = giornoRoma(adesso);
   const tra30Giorni = new Date(adesso.getTime() + 30 * 24 * 3600 * 1000)
     .toISOString()
     .slice(0, 10);

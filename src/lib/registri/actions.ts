@@ -1,5 +1,6 @@
 "use server";
 
+import { giornoRoma } from "@/lib/date";
 import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -139,7 +140,7 @@ export async function creaQuotaIscrizione(studenteId: string): Promise<ActionRes
     studente_id: studenteId,
     tipo: "iscrizione_annuale",
     importo_dovuto: danza + fitness,
-    data_scadenza: new Date().toISOString().slice(0, 10),
+    data_scadenza: giornoRoma(),
     note: `Iscrizione stagione ${stagione}`,
   });
   if (error) return { error: error.message };
@@ -159,20 +160,15 @@ export async function registraVersamento(
   const parsed = versamentoSchema.safeParse(input);
   if (!parsed.success) return { error: "Dati dell'incasso non validi." };
 
+  // Si puo' versare anche piu' del dovuto: l'eccedenza risulta "da
+  // restituire" finche' non viene rimborsata.
   const supabase = await createClient();
   const { data: pagamento } = await supabase
     .from("pagamenti")
-    .select("importo_dovuto, importo_pagato")
+    .select("id")
     .eq("id", parsed.data.pagamento_id)
     .maybeSingle();
   if (!pagamento) return { error: "Quota non trovata." };
-
-  const residuo = Number(pagamento.importo_dovuto) - Number(pagamento.importo_pagato);
-  if (parsed.data.importo > residuo + 0.001) {
-    return {
-      error: `L'importo supera il residuo da pagare (€${residuo.toFixed(2)}).`,
-    };
-  }
 
   const { data, error } = await supabase
     .from("versamenti")

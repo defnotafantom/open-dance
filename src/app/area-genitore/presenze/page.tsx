@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import { assicuraLezioni } from "@/lib/lezioni/actions";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,7 @@ export default async function PresenzeGenitorePage() {
   await assicuraLezioni(classeIds, 0, 2);
 
   const adesso = new Date();
-  const oggi = adesso.toISOString().slice(0, 10);
+  const oggi = giornoRoma(adesso);
   const tra14Giorni = new Date(adesso.getTime() + 14 * 24 * 3600 * 1000)
     .toISOString()
     .slice(0, 10);

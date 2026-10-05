@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { TIPO_LABEL } from "@/lib/pagamenti/schemas";
-import { residuo, statoQuota, type StatoQuota } from "@/lib/registri/stato";
+import { avvisiVoce, credito, residuo, statoQuota, type Avviso, type StatoQuota } from "@/lib/registri/stato";
 import type { AttivitaSocio, PagamentoTipoEnum } from "@/lib/supabase/database.types";
 
 export type Socio = {
@@ -26,7 +26,11 @@ export type RigaQuota = {
   descrizione: string;
   importo_dovuto: number;
   importo_pagato: number;
+  importo_rimborsato: number;
   residuo: number;
+  credito: number;
+  avvisi: Avviso[];
+  istanza_id: string | null;
   data_scadenza: string | null;
   competenza: string | null;
   stato: StatoQuota;
@@ -35,12 +39,14 @@ export type RigaQuota = {
 
 export async function caricaSoci(): Promise<Socio[]> {
   const supabase = await createClient();
-  const { data: studenti } = await supabase
+  const { data: studenti, error } = await supabase
     .from("studenti")
     .select(
       "id, nome, cognome, numero_tessera, attivita, data_tesseramento, attivo, data_nascita, genitore_id, profilo_id"
     )
     .order("numero_tessera", { nullsFirst: false });
+  // Un errore del database non deve sembrare "nessun socio".
+  if (error) throw new Error(`Soci non caricati: ${error.message}`);
 
   const referenteIds = [
     ...new Set((studenti ?? []).map((s) => s.genitore_id).filter((id): id is string => !!id)),
@@ -69,25 +75,28 @@ export async function caricaSoci(): Promise<Socio[]> {
 export async function caricaQuote(filtro?: {
   competenza?: string;
   soloAperte?: boolean;
+  istanzaId?: string;
 }): Promise<RigaQuota[]> {
   const supabase = await createClient();
   let query = supabase
     .from("pagamenti")
     .select(
-      "id, studente_id, tipo, importo_dovuto, importo_pagato, data_scadenza, competenza, note, stato"
+      "id, studente_id, tipo, importo_dovuto, importo_pagato, importo_rimborsato, data_scadenza, competenza, note, stato, istanza_id"
     )
     .order("data_scadenza", { nullsFirst: false });
   if (filtro?.competenza) query = query.eq("competenza", filtro.competenza);
-  if (filtro?.soloAperte) query = query.neq("stato", "pagato");
-  const { data: pagamenti } = await query;
+  if (filtro?.istanzaId) query = query.eq("istanza_id", filtro.istanzaId);
+  const { data: pagamenti, error } = await query;
+  if (error) throw new Error(`Quote non caricate: ${error.message}`);
 
   const soci = new Map((await caricaSoci()).map((s) => [s.id, s]));
 
-  return (pagamenti ?? []).map((p) => {
+  const righe = (pagamenti ?? []).map((p) => {
     const socio = soci.get(p.studente_id);
     const riga = {
       importo_dovuto: Number(p.importo_dovuto),
       importo_pagato: Number(p.importo_pagato),
+      importo_rimborsato: Number(p.importo_rimborsato),
       data_scadenza: p.data_scadenza,
     };
     return {
@@ -99,11 +108,17 @@ export async function caricaQuote(filtro?: {
       descrizione: p.note || TIPO_LABEL[p.tipo],
       ...riga,
       residuo: residuo(riga),
+      credito: credito(riga),
+      avvisi: avvisiVoce(riga),
+      istanza_id: p.istanza_id,
       competenza: p.competenza,
       stato: statoQuota(riga),
       referente: socio?.referente ?? "",
     };
   });
+
+  // "Aperte" = con almeno un avviso: da versare o da restituire.
+  return filtro?.soloAperte ? righe.filter((r) => r.avvisi.length > 0) : righe;
 }
 
 /** Dati per la finestra "Incassa". */

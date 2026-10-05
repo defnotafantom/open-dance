@@ -1,9 +1,10 @@
+import { giornoRoma } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export async function EventiFeed() {
   const supabase = await createClient();
-  const oggi = new Date().toISOString().slice(0, 10);
+  const oggi = giornoRoma();
   const { data: eventi, error } = await supabase
     .from("eventi")
     .select("id, nome, data, luogo, descrizione")

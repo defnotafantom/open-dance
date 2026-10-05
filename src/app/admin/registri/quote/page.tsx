@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import { caricaQuote, perIncasso } from "@/lib/registri/dati";
 import { euro, nomeMese, stagioneDi } from "@/lib/registri/costanti";
@@ -13,15 +14,16 @@ export default async function QuotePage({
   searchParams: Promise<{ mese?: string }>;
 }) {
   const { mese: meseParam } = await searchParams;
-  const mese = /^\d{4}-\d{2}$/.test(meseParam ?? "") ? meseParam! : new Date().toISOString().slice(0, 7);
+  const mese = /^\d{4}-\d{2}$/.test(meseParam ?? "") ? meseParam! : giornoRoma().slice(0, 7);
   const stagione = stagioneDi(new Date(`${mese}-15T12:00:00`));
 
   const supabase = await createClient();
-  const [{ data: tariffe }, quoteMese, altreAperte] = await Promise.all([
+  const [{ data: tariffe, error }, quoteMese, altreAperte] = await Promise.all([
     supabase.from("tariffe").select("attivita, voce, importo").eq("stagione", stagione),
     caricaQuote({ competenza: `${mese}-01` }),
     caricaQuote({ soloAperte: true }),
   ]);
+  if (error) throw new Error(`Listino non caricato: ${error.message}`);
   const altre = altreAperte.filter((q) => q.competenza !== `${mese}-01`);
 
   const atteso = quoteMese.reduce((t, q) => t + q.importo_dovuto, 0);

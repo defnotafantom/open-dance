@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IscrizioniChart, type IscrizioniMese } from "@/components/charts/iscrizioni-chart";
@@ -35,8 +36,8 @@ function ultimiMesi(n: number) {
 export default async function AdminPage() {
   const supabase = await createClient();
   const oggi = new Date();
-  const seiMesiFa = new Date(oggi.getFullYear(), oggi.getMonth() - 5, 1).toISOString().slice(0, 10);
-  const sessantaGiorniFa = new Date(oggi.getTime() - 60 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const seiMesiFa = giornoRoma(new Date(oggi.getFullYear(), oggi.getMonth() - 5, 1));
+  const sessantaGiorniFa = giornoRoma(new Date(oggi.getTime() - 60 * 24 * 3600 * 1000));
 
   const [studenti, classi, richieste, pagamentiSospesi] = await Promise.all([
     supabase.from("studenti").select("id", { count: "exact", head: true }),

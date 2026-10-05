@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { caricaQuote, caricaSoci, perIncasso, type RigaQuota } from "@/lib/registri/dati";
@@ -11,13 +12,13 @@ import { AlertTriangleIcon, ClockIcon } from "lucide-react";
 export default async function RegistriPanoramica() {
   const supabase = await createClient();
   const oggi = new Date();
-  const oggiIso = oggi.toISOString().slice(0, 10);
-  const traGiorni = new Date(oggi.getTime() + GIORNI_IN_SCADENZA * 86400000).toISOString().slice(0, 10);
+  const oggiIso = giornoRoma(oggi);
+  const traGiorni = giornoRoma(new Date(oggi.getTime() + GIORNI_IN_SCADENZA * 86400000));
   const inizioMese = `${oggiIso.slice(0, 7)}-01`;
-  const dodiciMesiFa = new Date(oggi.getFullYear(), oggi.getMonth() - 11, 1).toISOString().slice(0, 10);
-  const trentaGiorniFa = new Date(oggi.getTime() - 30 * 86400000).toISOString().slice(0, 10);
+  const dodiciMesiFa = giornoRoma(new Date(oggi.getFullYear(), oggi.getMonth() - 11, 1));
+  const trentaGiorniFa = giornoRoma(new Date(oggi.getTime() - 30 * 86400000));
 
-  const [soci, aperte, { data: versamenti }, { data: lezioni }] = await Promise.all([
+  const [soci, aperte, { data: versamenti, error: e1 }, { data: lezioni, error: e2 }] = await Promise.all([
     caricaSoci(),
     caricaQuote({ soloAperte: true }),
     supabase
@@ -28,12 +29,15 @@ export default async function RegistriPanoramica() {
     supabase.from("lezioni").select("id").gte("data", trentaGiorniFa).lte("data", oggiIso),
   ]);
 
+  if (e1 || e2) throw new Error((e1 ?? e2)!.message);
+
   const attivi = soci.filter((s) => s.attivo);
   const inRitardo = aperte.filter((q) => q.stato === "scaduto");
   const inScadenza = aperte.filter(
     (q) => q.stato !== "scaduto" && q.data_scadenza && q.data_scadenza <= traGiorni
   );
   const totaleRitardo = inRitardo.reduce((t, q) => t + q.residuo, 0);
+  const daRestituire = aperte.filter((q) => q.credito > 0);
   const incassatoMese = (versamenti ?? [])
     .filter((v) => v.data >= inizioMese)
     .reduce((t, v) => t + Number(v.importo), 0);
@@ -76,11 +80,14 @@ export default async function RegistriPanoramica() {
     { label: "Incassato questo mese", valore: euro(incassatoMese) },
     { label: "In ritardo", valore: String(inRitardo.length), nota: euro(totaleRitardo), allarme: inRitardo.length > 0 },
     { label: `In scadenza (${GIORNI_IN_SCADENZA} gg)`, valore: String(inScadenza.length) },
+    ...(daRestituire.length > 0
+      ? [{ label: "Da restituire", valore: String(daRestituire.length), nota: euro(daRestituire.reduce((t, q) => t + q.credito, 0)) }]
+      : []),
   ];
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {kpi.map((k) => (
           <div key={k.label} className={`panel-3d rounded-xl p-4 ${k.allarme ? "tile-red" : ""}`}>
             <p className="font-display text-[0.65rem] tracking-[0.2em] uppercase opacity-70">{k.label}</p>
@@ -104,6 +111,28 @@ export default async function RegistriPanoramica() {
           quote={inScadenza}
         />
       </div>
+
+      {daRestituire.length > 0 && (
+        <div className="panel-3d flex flex-col gap-3 rounded-xl p-5">
+          <h2 className="font-display text-lg uppercase">Da restituire ({daRestituire.length})</h2>
+          <ul className="flex flex-col divide-y divide-border">
+            {daRestituire.map((q) => (
+              <li key={q.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span>
+                  {q.socio} <span className="text-muted-foreground">· {q.descrizione}</span>
+                </span>
+                {q.istanza_id ? (
+                  <Link href={`/admin/registri/istanze/${q.istanza_id}`} className="font-display text-primary">
+                    {euro(q.credito)} &rarr;
+                  </Link>
+                ) : (
+                  <span className="font-display">{euro(q.credito)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="panel-3d flex flex-col gap-3 rounded-xl p-5">
         <div className="flex items-baseline justify-between">

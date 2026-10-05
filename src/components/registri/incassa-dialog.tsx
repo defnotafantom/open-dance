@@ -1,5 +1,6 @@
 "use client";
 
+import { giornoRoma } from "@/lib/date";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ export function IncassaDialog({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importo, setImporto] = useState(quota.residuo.toFixed(2));
-  const [data, setData] = useState(new Date().toISOString().slice(0, 10));
+  const [data, setData] = useState(giornoRoma());
   const [metodo, setMetodo] = useState<PagamentoMetodoEnum>("contanti");
   const [pagatore, setPagatore] = useState(quota.pagatore);
   const [codiceFiscale, setCodiceFiscale] = useState("");
@@ -49,7 +50,7 @@ export function IncassaDialog({
 
   function reset() {
     setImporto(quota.residuo.toFixed(2));
-    setData(new Date().toISOString().slice(0, 10));
+    setData(giornoRoma());
     setMetodo("contanti");
     setPagatore(quota.pagatore);
     setCodiceFiscale("");
@@ -119,6 +120,13 @@ export function IncassaDialog({
               <Input id="data" type="date" required value={data} onChange={(e) => setData(e.target.value)} />
             </div>
           </div>
+          {Number(importo.replace(",", ".")) > quota.residuo + 0.001 && (
+            <p className="rounded-lg bg-muted px-3 py-2 text-xs">
+              Supera il dovuto di{" "}
+              {euro(Number(importo.replace(",", ".")) - quota.residuo)}: l&apos;eccedenza risulterà
+              &quot;da restituire&quot; finché non registri il rimborso.
+            </p>
+          )}
           <div className="grid gap-2">
             <Label>Metodo</Label>
             <div className="flex flex-wrap gap-2">

@@ -1,3 +1,4 @@
+import { giornoRoma } from "@/lib/date";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { inviaPushAProfili } from "@/lib/push/send";
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const tra3Giorni = new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const tra3Giorni = giornoRoma(new Date(Date.now() + 3 * 24 * 3600 * 1000));
 
   const { data: pagamenti, error } = await admin
     .from("pagamenti")

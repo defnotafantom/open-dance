@@ -42,7 +42,8 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
   const [isAdulto, setIsAdulto] = useState(false);
 
   // Passo 3: iscrizione.
-  const [classeId, setClasseId] = useState(classi[0]?.id ?? "");
+  const [classiScelte, setClassiScelte] = useState<string[]>([]);
+  const [attivita, setAttivita] = useState<"danza" | "fitness" | "entrambe">("danza");
   const [quota, setQuota] = useState("");
 
   async function handleCerca() {
@@ -77,7 +78,7 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
       setError("Inserisci nome e cognome del nuovo referente.");
       return;
     }
-    if (!classeId) {
+    if (classiScelte.length === 0) {
       setError("Seleziona una classe.");
       return;
     }
@@ -108,9 +109,10 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
             data_nascita: dataNascita,
             codice_fiscale: codiceFiscale.trim() || undefined,
             is_adulto: isAdulto,
+            attivita,
           }
         : { tipo: "esistente", studente_id: studenteEsistenteId },
-      classe_id: classeId,
+      classi_ids: classiScelte,
       quota_concordata: quota.trim() ? Number(quota) : undefined,
     });
     setPending(false);
@@ -265,27 +267,51 @@ export function NuovaIscrizioneForm({ classi }: { classi: ClasseOpzione[] }) {
                   L&apos;iscritto e&apos; maggiorenne e si iscrive da solo (coincide con il referente)
                 </Label>
               </div>
+              <div className="grid gap-2">
+                <Label>Attività</Label>
+                <div className="flex flex-wrap gap-2">
+                  {(["danza", "fitness", "entrambe"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={attivita === v}
+                      onClick={() => setAttivita(v)}
+                      className={
+                        attivita === v
+                          ? "rounded-full bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+                          : "rounded-full border border-border px-3 py-1.5 text-sm"
+                      }
+                    >
+                      {v === "entrambe" ? "Danza + Fitness" : v === "danza" ? "Danza" : "Fitness"}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
       )}
 
       <div className="flex flex-col gap-3 rounded-lg panel-3d p-4">
-        <Label>3. Classe</Label>
-        <Select value={classeId} onValueChange={(v) => setClasseId(v ?? "")}>
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              {(v: string | null) => classi.find((c) => c.id === v)?.label ?? "Seleziona una classe"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {classi.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Label>3. Classi (anche più di una)</Label>
+        <div className="flex flex-col gap-2">
+          {classi.length === 0 && (
+            <p className="text-muted-foreground text-sm">Nessuna classe attiva.</p>
+          )}
+          {classi.map((c) => (
+            <label key={c.id} className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={classiScelte.includes(c.id)}
+                onCheckedChange={(v) =>
+                  setClassiScelte((prev) =>
+                    v === true ? [...prev, c.id] : prev.filter((id) => id !== c.id)
+                  )
+                }
+              />
+              {c.label}
+            </label>
+          ))}
+        </div>
         <div className="grid gap-2">
           <Label htmlFor="quota">Quota concordata (opzionale, €)</Label>
           <Input

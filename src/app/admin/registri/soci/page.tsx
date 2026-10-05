@@ -6,11 +6,12 @@ import { SociTable } from "./soci-table";
 export default async function SociPage() {
   const [soci, aperte] = await Promise.all([caricaSoci(), caricaQuote({ soloAperte: true })]);
 
-  const situazione = new Map<string, { ritardo: number; aperto: number }>();
+  const situazione = new Map<string, { ritardo: number; aperto: number; avvisi: { tipo: "da_versare" | "da_restituire"; importo: number; scaduto: boolean; voce: string }[] }>();
   for (const q of aperte) {
-    const s = situazione.get(q.studente_id) ?? { ritardo: 0, aperto: 0 };
+    const s = situazione.get(q.studente_id) ?? { ritardo: 0, aperto: 0, avvisi: [] };
     s.aperto += q.residuo;
     if (q.stato === "scaduto") s.ritardo += 1;
+    for (const a of q.avvisi) s.avvisi.push({ ...a, voce: q.descrizione });
     situazione.set(q.studente_id, s);
   }
 
@@ -28,6 +29,7 @@ export default async function SociPage() {
           ...s,
           ritardo: situazione.get(s.id)?.ritardo ?? 0,
           aperto: situazione.get(s.id)?.aperto ?? 0,
+          avvisi: situazione.get(s.id)?.avvisi ?? [],
         }))}
       />
     </div>

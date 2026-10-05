@@ -19,13 +19,15 @@ export const studenteManualeSchema = z.discriminatedUnion("tipo", [
     data_nascita: z.string().min(1, { error: "Inserisci la data di nascita." }),
     codice_fiscale: z.string().optional(),
     is_adulto: z.boolean(),
+    attivita: z.enum(["danza", "fitness", "entrambe"]),
   }),
 ]);
 
 export const iscrizioneManualeSchema = z.object({
   referente: referenteSchema,
   studente: studenteManualeSchema,
-  classe_id: z.uuid({ error: "Seleziona una classe." }),
+  // Un iscritto puo' frequentare piu' corsi: una o piu' classi insieme.
+  classi_ids: z.array(z.uuid()).min(1, { error: "Seleziona almeno una classe." }),
   quota_concordata: z.number().nonnegative().optional(),
 });
 

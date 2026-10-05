@@ -17,7 +17,7 @@ export default async function RendicontoPage({
   const a = `${anno}-12-31`;
 
   const supabase = await createClient();
-  const [{ data: versamenti }, { data: uscite }] = await Promise.all([
+  const [{ data: versamenti, error: e1 }, { data: uscite, error: e2 }, { data: rimborsi, error: e3 }] = await Promise.all([
     supabase
       .from("versamenti")
       .select("importo, data, pagamento_id")
@@ -30,7 +30,15 @@ export default async function RendicontoPage({
       .gte("data", da)
       .lte("data", a)
       .order("data", { ascending: false }),
+    supabase
+      .from("rimborsi")
+      .select("importo, data")
+      .eq("annullato", false)
+      .gte("data", da)
+      .lte("data", a),
   ]);
+
+  if (e1 || e2 || e3) throw new Error(`Movimenti non caricati: ${(e1 ?? e2 ?? e3)!.message}`);
 
   const pagamentoIds = [...new Set((versamenti ?? []).map((v) => v.pagamento_id))];
   const { data: pagamenti } =
@@ -46,6 +54,13 @@ export default async function RendicontoPage({
     const voce = TIPO_LABEL[tipoDi.get(v.pagamento_id) ?? "altro"];
     entratePerVoce.set(voce, (entratePerVoce.get(voce) ?? 0) + Number(v.importo));
   }
+  // Le restituzioni riducono le entrate (non sono spese dell'associazione).
+  let totRimborsi = 0;
+  for (const r of rimborsi ?? []) {
+    mesi[Number(r.data.slice(5, 7)) - 1].entrate -= Number(r.importo);
+    totRimborsi += Number(r.importo);
+  }
+  if (totRimborsi > 0) entratePerVoce.set("Restituzioni", -totRimborsi);
   const uscitePerCategoria = new Map<string, number>();
   for (const u of uscite ?? []) {
     mesi[Number(u.data.slice(5, 7)) - 1].uscite += Number(u.importo);
