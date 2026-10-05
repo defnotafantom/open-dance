@@ -1,9 +1,10 @@
-import { requireRuolo, RUOLI_TITOLARI } from "@/lib/auth/dal";
+import { requireRuolo } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { AccessiList } from "./accessi-list";
 
 export default async function AccessiPage() {
-  await requireRuolo(RUOLI_TITOLARI);
+  // Solo il webmaster: e' l'unico che riceve le richieste.
+  await requireRuolo(["webmaster"]);
   const supabase = await createClient();
   const { data: richieste, error } = await supabase
     .from("accessi_sito")
@@ -16,9 +17,9 @@ export default async function AccessiPage() {
       <div>
         <h1 className="font-display text-3xl uppercase">Accessi al sito</h1>
         <p className="text-muted-foreground max-w-2xl text-sm">
-          Il sito è chiuso al pubblico. Chi inserisce il codice chiede di entrare: qui approvi,
-          neghi o revochi. Un accesso approvato dura 30 giorni; una revoca vale subito. Chi ha un
-          account e fa il login entra senza codice.
+          Involucro esterno del sito: chi inserisce il codice chiede di entrare e la notifica
+          arriva solo a te. Qui vedi tutte le richieste, approvi, neghi o revochi. Un accesso
+          approvato dura 30 giorni; una revoca vale subito.
         </p>
       </div>
       {error ? (

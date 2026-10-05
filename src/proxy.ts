@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { COOKIE_ACCESSO, manutenzioneAttiva, percorsoLibero } from "@/lib/manutenzione";
+import { COOKIE_ACCESSO, manutenzioneAttiva, percorsoLibero, percorsoLogin } from "@/lib/manutenzione";
 import type { Database } from "@/lib/supabase/database.types";
 
 const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore", "/stampa"];
@@ -47,14 +47,18 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Sito chiuso: chi non ha fatto il login entra solo con una richiesta
-  // approvata da un titolare (e non revocata: si ricontrolla a ogni pagina).
+  // Sito chiuso (involucro esterno): chi non ha una sessione entra solo con
+  // una richiesta approvata dal webmaster, ricontrollata a ogni pagina.
   if (manutenzioneAttiva() && !isAuthenticated && !percorsoLibero(path)) {
     const token = request.cookies.get(COOKIE_ACCESSO)?.value;
     const { data: stato } = token
       ? await supabase.rpc("accesso_sito_stato", { p_token: token })
       : { data: null };
-    if (stato !== "approvato") {
+    const loginDiEmergenza =
+      stato !== "approvato" &&
+      percorsoLogin(path) &&
+      !(await supabase.rpc("webmaster_ha_notifiche")).data;
+    if (stato !== "approvato" && !loginDiEmergenza) {
       const url = request.nextUrl.clone();
       url.pathname = "/manutenzione";
       url.search = "";

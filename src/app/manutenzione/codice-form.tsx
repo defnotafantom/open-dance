@@ -69,12 +69,6 @@ export function CodiceForm({ statoIniziale }: { statoIniziale: string | null }) 
       <Button type="submit" variant="outline" disabled={pending}>
         {pending ? "Invio..." : "Chiedi l'accesso"}
       </Button>
-      <Link
-        href="/login"
-        className="font-display text-[0.65rem] tracking-[0.25em] text-muted-foreground uppercase hover:text-foreground"
-      >
-        Hai un account? Accedi
-      </Link>
     </form>
   );
 }

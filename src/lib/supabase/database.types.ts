@@ -552,6 +552,10 @@ export interface Database {
         Args: { p_token: string };
         Returns: string | null;
       };
+      webmaster_ha_notifiche: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
     };
   };
 }

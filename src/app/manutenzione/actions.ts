@@ -4,15 +4,15 @@ import { cookies, headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { inviaPushAProfili } from "@/lib/push/send";
-import { RUOLI_TITOLARI } from "@/lib/supabase/database.types";
 import { COOKIE_ACCESSO, codiceAccesso } from "@/lib/manutenzione";
+import { firmaRichiesta } from "@/lib/accessi/firma";
 
 export type StatoRichiesta = {
   error?: string;
   inviata?: boolean;
 };
 
-/** Codice + nome: crea la richiesta e avvisa i titolari sul telefono. */
+/** Codice + nome: crea la richiesta e avvisa SOLO il webmaster sul telefono. */
 export async function richiediAccesso(
   _stato: StatoRichiesta | undefined,
   formData: FormData
@@ -46,13 +46,17 @@ export async function richiediAccesso(
   }
 
   const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
-  const { error } = await admin.from("accessi_sito").insert({
-    token,
-    nome,
-    ip,
-    user_agent: h.get("user-agent")?.slice(0, 300) ?? null,
-  });
-  if (error) {
+  const { data: richiesta, error } = await admin
+    .from("accessi_sito")
+    .insert({
+      token,
+      nome,
+      ip,
+      user_agent: h.get("user-agent")?.slice(0, 300) ?? null,
+    })
+    .select("id")
+    .single();
+  if (error || !richiesta) {
     return { error: "Non è stato possibile inviare la richiesta, riprova." };
   }
 
@@ -64,14 +68,14 @@ export async function richiediAccesso(
     maxAge: 60 * 60 * 24 * 60,
   });
 
-  const { data: titolari } = await admin.from("profiles").select("id").in("ruolo", RUOLI_TITOLARI);
+  const { data: webmaster } = await admin.from("profiles").select("id").eq("ruolo", "webmaster");
   try {
     await inviaPushAProfili(
-      (titolari ?? []).map((t) => t.id),
+      (webmaster ?? []).map((w) => w.id),
       {
         title: "Richiesta di accesso al sito",
-        body: `${nome} ha inserito il codice e chiede di entrare.`,
-        url: "/admin/accessi",
+        body: `${nome} ha inserito il codice. Tocca per approvare o negare.`,
+        url: `/manutenzione/decidi?id=${richiesta.id}&firma=${firmaRichiesta(richiesta.id)}`,
       }
     );
   } catch {

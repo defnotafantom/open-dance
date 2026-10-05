@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRuolo, RUOLI_TITOLARI } from "@/lib/auth/dal";
+import { requireRuolo } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { GIORNI_ACCESSO } from "@/lib/manutenzione";
 
@@ -9,7 +9,7 @@ export async function decidiAccesso(
   id: string,
   decisione: "approvato" | "negato" | "revocato"
 ): Promise<{ error?: string }> {
-  const profile = await requireRuolo(RUOLI_TITOLARI);
+  const profile = await requireRuolo(["webmaster"]);
   const supabase = await createClient();
   const { error } = await supabase
     .from("accessi_sito")

@@ -3,10 +3,10 @@
  *
  * In produzione e' ATTIVO per impostazione predefinita; si riapre con
  * MANUTENZIONE=off su Vercel. Chi non ha un account inserisce il codice e il
- * proprio nome: parte una richiesta che un titolare approva o nega dal
- * gestionale (con notifica sul telefono). Il cookie contiene solo un token
+ * proprio nome: parte una richiesta che SOLO il webmaster riceve come
+ * notifica sul telefono e approva o nega dal link della notifica. Il cookie contiene solo un token
  * casuale; il permesso sta nel database, quindi una revoca vale subito.
- * Chi ha fatto il login entra senza codice. In sviluppo e' attivo solo se
+ * Il login sta dentro l'involucro; chi ha gia' una sessione entra. In sviluppo e' attivo solo se
  * MANUTENZIONE=on in .env.local, per provarlo.
  */
 export const COOKIE_ACCESSO = "od_accesso";
@@ -25,19 +25,29 @@ export function manutenzioneAttiva() {
 /** Durata di un accesso approvato. */
 export const GIORNI_ACCESSO = 30;
 
-/** Percorsi raggiungibili anche a sito chiuso (login compreso, per lo staff). */
+/** Percorsi raggiungibili anche a sito chiuso. */
 export function percorsoLibero(path: string) {
   return (
     path === "/manutenzione" ||
-    path === "/login" ||
-    path.startsWith("/recupera-password") ||
-    path === "/verifica-accesso" ||
+    path.startsWith("/manutenzione/") ||
     path.startsWith("/auth/") ||
-    path.startsWith("/invito/") ||
     path.startsWith("/api/cron/") ||
     path === "/manifest.webmanifest" ||
     path === "/robots.txt" ||
     path === "/sw.js" ||
     /\.(png|ico|svg|webmanifest)$/.test(path)
+  );
+}
+
+/**
+ * Le pagine di accesso stanno DENTRO l'involucro. Unica eccezione: finche'
+ * il webmaster non ha attivato le notifiche su nessun dispositivo, restano
+ * raggiungibili, altrimenti nessuno potrebbe approvare la prima richiesta.
+ */
+export function percorsoLogin(path: string) {
+  return (
+    path === "/login" ||
+    path.startsWith("/recupera-password") ||
+    path === "/verifica-accesso"
   );
 }

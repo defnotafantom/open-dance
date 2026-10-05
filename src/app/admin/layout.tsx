@@ -24,14 +24,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nav = RUOLI_TITOLARI.includes(profile.ruolo)
     ? [
         ...NAV_BASE,
-        { href: "/admin/accessi", label: "Accessi al sito" },
         { href: "/admin/candidature", label: "Candidature" },
         { href: "/admin/impostazioni", label: "Impostazioni" },
       ]
     : NAV_BASE;
 
+  const navCompleta =
+    profile.ruolo === "webmaster" ? [...nav, { href: "/admin/accessi", label: "Accessi al sito" }] : nav;
+
   return (
-    <AppShell title="Area staff" nav={nav} profile={profile}>
+    <AppShell title="Area staff" nav={navCompleta} profile={profile}>
       {children}
     </AppShell>
   );
