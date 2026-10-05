@@ -56,7 +56,8 @@ export async function proxy(request: NextRequest) {
 
   if (isSoloOspiti && isAuthenticated) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    // /app smista verso l'area giusta per ruolo.
+    url.pathname = "/app";
     return NextResponse.redirect(url);
   }
 

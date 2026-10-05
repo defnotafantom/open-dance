@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Open Dance",
     description:
       "Gestione corsi, iscrizioni, pagamenti e comunicazioni della scuola di danza.",
-    start_url: "/",
+    start_url: "/app",
     display: "standalone",
     background_color: "#0d0d0d",
     theme_color: "#A11622",

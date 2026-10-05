@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { nomiInsegnantiPubblici } from "@/lib/insegnanti/pubblici";
 import { Grain } from "@/components/marketing/grain";
 import { PublicPage } from "@/components/marketing/public-page";
 import { Button } from "@/components/ui/button";
@@ -25,12 +26,7 @@ export default async function InsegnanteProfiloPage({
     notFound();
   }
 
-  const { data: profilo } = await supabase
-    .from("profiles")
-    .select("nome, cognome")
-    .eq("id", id)
-    .maybeSingle();
-  const nome = profilo ? `${profilo.nome} ${profilo.cognome}` : "Insegnante";
+  const nome = (await nomiInsegnantiPubblici([id])).get(id) ?? "Insegnante";
   const fotoUrl = insegnante.foto_path
     ? supabase.storage.from("insegnanti").getPublicUrl(insegnante.foto_path).data.publicUrl
     : null;

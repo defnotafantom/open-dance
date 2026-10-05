@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { nomiInsegnantiPubblici } from "@/lib/insegnanti/pubblici";
 import { PublicHero, PublicPage } from "@/components/marketing/public-page";
 
 export default async function InsegnantiPage() {
@@ -10,12 +11,7 @@ export default async function InsegnantiPage() {
     .select("profilo_id, specializzazioni, anni_esperienza, foto_path")
     .eq("pubblicato", true);
 
-  const profiloIds = (insegnanti ?? []).map((i) => i.profilo_id);
-  const { data: profili } =
-    profiloIds.length > 0
-      ? await supabase.from("profiles").select("id, nome, cognome").in("id", profiloIds)
-      : { data: [] as { id: string; nome: string; cognome: string }[] };
-  const nomeById = new Map((profili ?? []).map((p) => [p.id, `${p.nome} ${p.cognome}`]));
+  const nomeById = await nomiInsegnantiPubblici((insegnanti ?? []).map((i) => i.profilo_id));
 
   const conFoto = (insegnanti ?? []).map((i) => ({
     ...i,
