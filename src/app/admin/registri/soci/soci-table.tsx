@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { aggiornaSocio, creaQuotaIscrizione } from "@/lib/registri/actions";
@@ -68,9 +69,9 @@ export function SociTable({ soci }: { soci: RigaSocio[] }) {
                   <p className="font-display text-xs tracking-[0.15em] text-muted-foreground uppercase">
                     Tessera {s.numero_tessera ?? "—"}
                   </p>
-                  <p className="truncate font-display text-lg uppercase">
+                  <Link href={`/admin/registri/soci/${s.id}`} className="block truncate font-display text-lg uppercase hover:text-primary">
                     {s.nome} {s.cognome}
-                  </p>
+                  </Link>
                   {s.referente !== `${s.nome} ${s.cognome}` && (
                     <p className="text-muted-foreground truncate text-xs">Referente: {s.referente}</p>
                   )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { eliminaStudenteStaff } from "@/lib/studenti/actions";
@@ -66,7 +67,9 @@ export function StudentiTable({ studenti }: { studenti: StudenteRiga[] }) {
               {filtrati.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">
-                    {s.nome} {s.cognome}
+                    <Link href={`/admin/registri/soci/${s.id}`} className="hover:text-primary hover:underline">
+                      {s.nome} {s.cognome}
+                    </Link>
                   </TableCell>
                   <TableCell>{new Date(s.data_nascita).toLocaleDateString("it-IT")}</TableCell>
                   <TableCell>
@@ -105,9 +108,9 @@ export function StudentiTable({ studenti }: { studenti: StudenteRiga[] }) {
             {filtrati.map((s) => (
               <DataListItem key={s.id}>
                 <div className="flex items-start justify-between gap-3">
-                  <p className="font-medium">
+                  <Link href={`/admin/registri/soci/${s.id}`} className="font-medium hover:text-primary">
                     {s.nome} {s.cognome}
-                  </p>
+                  </Link>
                   <Badge variant={s.is_adulto ? "secondary" : "outline"}>
                     {s.is_adulto ? "Allievo adulto" : "Minore"}
                   </Badge>

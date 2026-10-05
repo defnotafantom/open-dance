@@ -76,6 +76,7 @@ export async function caricaQuote(filtro?: {
   competenza?: string;
   soloAperte?: boolean;
   istanzaId?: string;
+  studenteId?: string;
 }): Promise<RigaQuota[]> {
   const supabase = await createClient();
   let query = supabase
@@ -86,6 +87,7 @@ export async function caricaQuote(filtro?: {
     .order("data_scadenza", { nullsFirst: false });
   if (filtro?.competenza) query = query.eq("competenza", filtro.competenza);
   if (filtro?.istanzaId) query = query.eq("istanza_id", filtro.istanzaId);
+  if (filtro?.studenteId) query = query.eq("studente_id", filtro.studenteId);
   const { data: pagamenti, error } = await query;
   if (error) throw new Error(`Quote non caricate: ${error.message}`);
 

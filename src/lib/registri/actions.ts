@@ -1,6 +1,5 @@
 "use server";
 
-import { giornoRoma } from "@/lib/date";
 import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +14,7 @@ import {
   type VersamentoInput,
 } from "@/lib/registri/schemas";
 import { nomeMese, stagioneDi } from "@/lib/registri/costanti";
+import { assicuraQuotaIscrizione } from "@/lib/registri/servizi";
 
 export type ActionResult = { error?: string };
 
@@ -117,34 +117,18 @@ export async function generaQuoteMese(
   return { create: nuove.length, giaPresenti: giaFatti.size, senzaPrezzo };
 }
 
-/** Quota di iscrizione annuale dal listino, per un socio. */
+/** Quota di iscrizione annuale dal listino, per un socio (una per stagione). */
 export async function creaQuotaIscrizione(studenteId: string): Promise<ActionResult> {
   await requireRuolo(RUOLI_STAFF);
-  const supabase = await createClient();
-  const { data: socio } = await supabase
-    .from("studenti")
-    .select("attivita")
-    .eq("id", studenteId)
-    .maybeSingle();
-  if (!socio) return { error: "Socio non trovato." };
-
-  const stagione = stagioneDi();
-  const prezzo = await listino(stagione);
-  const danza = socio.attivita !== "fitness" ? prezzo("danza", "iscrizione") : 0;
-  const fitness = socio.attivita !== "danza" ? prezzo("fitness", "iscrizione") : 0;
-  if (danza == null || fitness == null) {
-    return { error: `Manca il prezzo di iscrizione nel listino ${stagione}.` };
+  const r = await assicuraQuotaIscrizione(await createClient(), studenteId);
+  if (!r.creata) {
+    return {
+      error:
+        r.motivo === "già presente"
+          ? "La quota di iscrizione di questa stagione esiste già."
+          : `Quota non creata: ${r.motivo}.`,
+    };
   }
-
-  const { error } = await supabase.from("pagamenti").insert({
-    studente_id: studenteId,
-    tipo: "iscrizione_annuale",
-    importo_dovuto: danza + fitness,
-    data_scadenza: giornoRoma(),
-    note: `Iscrizione stagione ${stagione}`,
-  });
-  if (error) return { error: error.message };
-
   aggiornaPagine();
   return {};
 }

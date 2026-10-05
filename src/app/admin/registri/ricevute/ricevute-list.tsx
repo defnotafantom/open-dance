@@ -56,6 +56,8 @@ export function RicevuteList({ anno, ricevute }: { anno: number; ricevute: Ricev
         <Button size="sm" variant="outline" onClick={() => router.push(`/admin/registri/ricevute?anno=${anno + 1}`)}>
           {anno + 1} &rarr;
         </Button>
+        <Button size="sm" variant="outline" nativeButton={false} render={<a href={`/admin/registri/ricevute/export?anno=${anno}`}>CSV ricevute {anno}</a>} />
+        <Button size="sm" variant="outline" nativeButton={false} render={<a href="/admin/pagamenti/export">CSV situazione quote</a>} />
         <span className="text-muted-foreground ml-auto text-sm">
           {ricevute.length} ricevute · valide {euro(totale)}
         </span>

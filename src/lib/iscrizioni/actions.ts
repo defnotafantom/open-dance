@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
+import { assicuraQuotaIscrizione } from "@/lib/registri/servizi";
 
 export type ActionResult = { error?: string };
 
@@ -74,17 +75,23 @@ export async function ritiraRichiesta(iscrizioneId: string): Promise<ActionResul
 export async function approvaIscrizione(iscrizioneId: string): Promise<ActionResult> {
   await requireRuolo(RUOLI_STAFF);
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: iscrizione, error } = await supabase
     .from("iscrizioni")
     .update({ stato: "attiva" })
-    .eq("id", iscrizioneId);
+    .eq("id", iscrizioneId)
+    .select("studente_id")
+    .single();
 
   if (error) {
     return { error: error.message };
   }
 
+  // Iscrizione attiva = socio della stagione: quota d'iscrizione dal listino.
+  await assicuraQuotaIscrizione(supabase, iscrizione.studente_id);
+
   revalidatePath("/admin/iscrizioni");
   revalidatePath("/area-genitore/orario");
+  revalidatePath("/admin/registri", "layout");
   return {};
 }
 

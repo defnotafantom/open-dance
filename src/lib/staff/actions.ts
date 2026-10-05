@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireRuolo, RUOLI_STAFF } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { assicuraQuotaIscrizione } from "@/lib/registri/servizi";
 import {
   iscrizioneManualeSchema,
   type IscrizioneManualeInput,
@@ -124,6 +125,10 @@ export async function creaIscrizioneManuale(input: IscrizioneManualeInput): Prom
     if (iscrizioneError) {
       return { error: iscrizioneError.message };
     }
+  }
+
+  if (nuove.length > 0) {
+    await assicuraQuotaIscrizione(admin, studenteId);
   }
 
   revalidatePath("/admin/iscrizioni");
