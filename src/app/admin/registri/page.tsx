@@ -18,7 +18,7 @@ export default async function RegistriPanoramica() {
   const dodiciMesiFa = giornoRoma(new Date(oggi.getFullYear(), oggi.getMonth() - 11, 1));
   const trentaGiorniFa = giornoRoma(new Date(oggi.getTime() - 30 * 86400000));
 
-  const [soci, aperte, { data: versamenti, error: e1 }, { data: lezioni, error: e2 }] = await Promise.all([
+  const [soci, aperte, { data: versati, error: e1 }, { data: lezioni, error: e2 }, { data: rimborsi, error: e3 }] = await Promise.all([
     caricaSoci(),
     caricaQuote({ soloAperte: true }),
     supabase
@@ -27,9 +27,16 @@ export default async function RegistriPanoramica() {
       .eq("annullato", false)
       .gte("data", dodiciMesiFa),
     supabase.from("lezioni").select("id").gte("data", trentaGiorniFa).lte("data", oggiIso),
+    supabase.from("rimborsi").select("importo, data").eq("annullato", false).gte("data", dodiciMesiFa),
   ]);
 
-  if (e1 || e2) throw new Error((e1 ?? e2)!.message);
+  if (e1 || e2 || e3) throw new Error((e1 ?? e2 ?? e3)!.message);
+
+  // Incassi netti, come nel rendiconto: le restituzioni si sottraggono.
+  const versamenti = [
+    ...(versati ?? []),
+    ...(rimborsi ?? []).map((r) => ({ data: r.data, importo: -Number(r.importo) })),
+  ];
 
   const attivi = soci.filter((s) => s.attivo);
   const inRitardo = aperte.filter((q) => q.stato === "scaduto");
@@ -38,7 +45,7 @@ export default async function RegistriPanoramica() {
   );
   const totaleRitardo = inRitardo.reduce((t, q) => t + q.residuo, 0);
   const daRestituire = aperte.filter((q) => q.credito > 0);
-  const incassatoMese = (versamenti ?? [])
+  const incassatoMese = versamenti
     .filter((v) => v.data >= inizioMese)
     .reduce((t, v) => t + Number(v.importo), 0);
 
@@ -48,7 +55,7 @@ export default async function RegistriPanoramica() {
     const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1);
     perMese.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, 0);
   }
-  for (const v of versamenti ?? []) {
+  for (const v of versamenti) {
     const k = v.data.slice(0, 7);
     if (perMese.has(k)) perMese.set(k, (perMese.get(k) ?? 0) + Number(v.importo));
   }

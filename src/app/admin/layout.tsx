@@ -12,6 +12,7 @@ const NAV_BASE: NavItem[] = [
   { href: "/admin/sito", label: "Sito pubblico" },
   { href: "/admin/staff", label: "Staff" },
   { href: "/admin/sicurezza", label: "Sicurezza accesso" },
+  { href: "/admin/lavori", label: "Lavori sul sito" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

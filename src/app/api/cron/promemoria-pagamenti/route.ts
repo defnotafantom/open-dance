@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
   const { data: pagamenti, error } = await admin
     .from("pagamenti")
-    .select("id, studente_id, tipo, importo_dovuto, importo_pagato, data_scadenza, stato")
+    .select("id, studente_id, tipo, note, importo_dovuto, importo_pagato, data_scadenza, stato")
     .in("stato", ["da_pagare", "parziale", "scaduto"])
     .is("promemoria_inviato_at", null)
     .not("data_scadenza", "is", null)
@@ -53,7 +53,8 @@ export async function GET(request: Request) {
     const scadenzaTesto = p.data_scadenza
       ? new Date(p.data_scadenza).toLocaleDateString("it-IT")
       : "";
-    const oggetto = `Promemoria pagamento — ${TIPO_LABEL[p.tipo]}`;
+    // Stesso nome della voce che la famiglia vede nell'area (es. "ABITI CONCORSO").
+    const oggetto = `Promemoria — ${p.note || TIPO_LABEL[p.tipo]}`;
 
     let almenoUnCanaleOk = false;
 
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
       await inviaPushAProfili([referenteId], {
         title: oggetto,
         body: `€${residuo} per ${nomeStudente}, scadenza ${scadenzaTesto}.`,
-        url: "/",
+        url: "/area-genitore/pagamenti",
       });
       // inviaPushAProfili e' best-effort e silenziosa: se le chiavi VAPID
       // sono configurate consideriamo il tentativo un canale valido.

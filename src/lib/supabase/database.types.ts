@@ -541,6 +541,19 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["istanze"]["Row"]>;
         Relationships: [];
       };
+      richieste_lavori: {
+        Row: {
+          id: string;
+          voce: string | null;
+          testo: string | null;
+          profilo_id: string;
+          evasa: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["richieste_lavori"]["Row"]> & { profilo_id: string };
+        Update: Partial<Database["public"]["Tables"]["richieste_lavori"]["Row"]>;
+        Relationships: [];
+      };
       rimborsi: {
         Row: {
           id: string;

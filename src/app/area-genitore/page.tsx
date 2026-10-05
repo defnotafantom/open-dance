@@ -23,7 +23,7 @@ export default async function AreaGenitorePage() {
   const figliIds = figli.map((f) => f.id);
 
   const vuoto = { data: [] as Record<string, unknown>[] };
-  const [{ data: iscrizioni }, { data: pagamenti }, nonLette] =
+  const [{ data: iscrizioni }, nonLette] =
     figliIds.length > 0
       ? await Promise.all([
           supabase
@@ -31,14 +31,9 @@ export default async function AreaGenitorePage() {
             .select("studente_id, classe_id")
             .in("studente_id", figliIds)
             .eq("stato", "attiva"),
-          supabase
-            .from("pagamenti")
-            .select("id, importo_dovuto, importo_pagato, stato")
-            .in("studente_id", figliIds)
-            .in("stato", ["da_pagare", "parziale", "scaduto"]),
           contaComunicazioniNonLette(),
         ])
-      : [vuoto, vuoto, await contaComunicazioniNonLette()];
+      : [vuoto, await contaComunicazioniNonLette()];
 
   // Avvisi permanenti per ogni figlio: restano finche' la condizione non e'
   // soddisfatta (quota versata, eccedenza restituita), poi spariscono.
@@ -97,10 +92,11 @@ export default async function AreaGenitorePage() {
     (classiInfo ?? []).map((c) => [c.id, (corsi ?? []).find((co) => co.id === c.corso_id)?.nome ?? "Corso"])
   );
 
-  const totaleDaSaldare = (pagamenti ?? []).reduce(
-    (acc, p) => acc + (Number(p.importo_dovuto) - Number(p.importo_pagato)),
-    0
-  );
+  // Stessa fonte degli avvisi: il totale e il banner non possono divergere.
+  const totaleDaSaldare = avvisiPerFiglio
+    .flatMap((x) => x.avvisi)
+    .filter((a) => a.avviso.tipo === "da_versare")
+    .reduce((acc, a) => acc + a.avviso.importo, 0);
 
   const { data: scuola } = await supabase
     .from("impostazioni_scuola")

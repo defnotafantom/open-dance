@@ -43,8 +43,9 @@ export default async function StudentiPage() {
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-3xl uppercase tracking-tight">Studenti</h1>
       <p className="text-muted-foreground max-w-md text-sm">
-        Gli studenti vengono creati da genitori e allievi maggiorenni nella
-        propria area. Da qui puoi consultarli e, se necessario, rimuoverli.
+        Gli alunni si aggiungono da Iscrizioni → Nuova iscrizione, oppure li
+        aggiungono le famiglie invitate nella propria area. Un clic sul nome
+        apre la scheda completa; da qui puoi anche rimuoverli.
       </p>
       <StudentiTable studenti={righe} />
     </div>

@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { TIPO_LABEL, METODO_LABEL, type StatoPagamento } from "@/lib/pagamenti/schemas";
+import { TIPO_LABEL } from "@/lib/pagamenti/schemas";
+import { credito, statoQuota } from "@/lib/registri/stato";
+import { euro } from "@/lib/registri/costanti";
 import { StatoPagamentoBadge } from "@/components/pagamenti/stato-pagamento-badge";
 import {
   Table,
@@ -20,16 +22,34 @@ export default async function PagamentiGenitorePage() {
   const figliIds = (figli ?? []).map((f) => f.id);
   const nomeById = new Map((figli ?? []).map((f) => [f.id, `${f.nome} ${f.cognome}`]));
 
-  const { data: pagamenti, error: pagamentiError } =
+  const { data: righe, error: pagamentiError } =
     figliIds.length > 0
       ? await supabase
           .from("pagamenti")
-          .select("id, studente_id, tipo, importo_dovuto, importo_pagato, data_scadenza, metodo, stato")
+          .select("id, studente_id, tipo, note, importo_dovuto, importo_pagato, importo_rimborsato, data_scadenza")
           .in("studente_id", figliIds)
           .order("data_scadenza", { nullsFirst: false })
       : { data: [], error: null };
 
   const error = figliError ?? pagamentiError;
+
+  // Stato e voce calcolati come nei Registri dello staff: il ritardo dipende
+  // da oggi, e le istanze (es. abiti) si chiamano col loro nome.
+  const pagamenti = (righe ?? []).map((p) => {
+    const q = {
+      importo_dovuto: Number(p.importo_dovuto),
+      importo_pagato: Number(p.importo_pagato),
+      importo_rimborsato: Number(p.importo_rimborsato),
+      data_scadenza: p.data_scadenza,
+    };
+    return {
+      ...p,
+      ...q,
+      voce: p.note || TIPO_LABEL[p.tipo],
+      stato: statoQuota(q),
+      daRestituire: credito(q),
+    };
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +58,7 @@ export default async function PagamentiGenitorePage() {
         <p className="text-destructive text-sm">
           Impossibile caricare i pagamenti: {error.message}
         </p>
-      ) : !pagamenti || pagamenti.length === 0 ? (
+      ) : pagamenti.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nessun pagamento registrato al momento.</p>
       ) : (
         <>
@@ -46,11 +66,10 @@ export default async function PagamentiGenitorePage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Studente</TableHead>
-                <TableHead>Tipo</TableHead>
+                <TableHead>Voce</TableHead>
                 <TableHead>Dovuto</TableHead>
                 <TableHead>Pagato</TableHead>
                 <TableHead>Scadenza</TableHead>
-                <TableHead>Metodo</TableHead>
                 <TableHead>Stato</TableHead>
               </TableRow>
             </TableHeader>
@@ -60,15 +79,17 @@ export default async function PagamentiGenitorePage() {
                   <TableCell className="font-medium">
                     {nomeById.get(p.studente_id) ?? "—"}
                   </TableCell>
-                  <TableCell>{TIPO_LABEL[p.tipo]}</TableCell>
-                  <TableCell>€{p.importo_dovuto.toFixed(2)}</TableCell>
-                  <TableCell>€{p.importo_pagato.toFixed(2)}</TableCell>
+                  <TableCell>{p.voce}</TableCell>
+                  <TableCell>{euro(p.importo_dovuto)}</TableCell>
+                  <TableCell>{euro(p.importo_pagato - p.importo_rimborsato)}</TableCell>
                   <TableCell>
                     {p.data_scadenza ? new Date(p.data_scadenza).toLocaleDateString("it-IT") : "—"}
                   </TableCell>
-                  <TableCell>{p.metodo ? METODO_LABEL[p.metodo] : "—"}</TableCell>
                   <TableCell>
-                    <StatoPagamentoBadge stato={p.stato as StatoPagamento} />
+                    <StatoPagamentoBadge stato={p.stato} />
+                    {p.daRestituire > 0 && (
+                      <p className="mt-1 text-xs">La scuola ti restituisce {euro(p.daRestituire)}</p>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -80,16 +101,19 @@ export default async function PagamentiGenitorePage() {
               <DataListItem key={p.id}>
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-medium">{nomeById.get(p.studente_id) ?? "—"}</p>
-                  <StatoPagamentoBadge stato={p.stato as StatoPagamento} />
+                  <StatoPagamentoBadge stato={p.stato} />
                 </div>
+                {p.daRestituire > 0 && (
+                  <p className="text-xs">La scuola ti restituisce {euro(p.daRestituire)}</p>
+                )}
                 <DataListRow>
-                  <DataListLabel>Tipo</DataListLabel>
-                  <span>{TIPO_LABEL[p.tipo]}</span>
+                  <DataListLabel>Voce</DataListLabel>
+                  <span>{p.voce}</span>
                 </DataListRow>
                 <DataListRow>
                   <DataListLabel>Importo</DataListLabel>
                   <span>
-                    €{p.importo_pagato.toFixed(2)} / €{p.importo_dovuto.toFixed(2)}
+                    {euro(p.importo_pagato - p.importo_rimborsato)} / {euro(p.importo_dovuto)}
                   </span>
                 </DataListRow>
                 <DataListRow>
@@ -97,10 +121,6 @@ export default async function PagamentiGenitorePage() {
                   <span>
                     {p.data_scadenza ? new Date(p.data_scadenza).toLocaleDateString("it-IT") : "—"}
                   </span>
-                </DataListRow>
-                <DataListRow>
-                  <DataListLabel>Metodo</DataListLabel>
-                  <span>{p.metodo ? METODO_LABEL[p.metodo] : "—"}</span>
                 </DataListRow>
               </DataListItem>
             ))}

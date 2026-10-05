@@ -100,7 +100,8 @@ export async function requireRuolo(ruoliConsentiti: RuoloEnum[]) {
   const profile = await getProfile();
 
   if (!ruoliConsentiti.includes(profile.ruolo)) {
-    redirect("/");
+    // Nella propria area, non sulla vetrina pubblica.
+    redirect(areaPerRuolo(profile.ruolo));
   }
 
   return profile;
@@ -127,24 +128,20 @@ export async function requireAreaInsegnante() {
     .maybeSingle();
 
   if (!data) {
-    redirect("/");
+    redirect(areaPerRuolo(profile.ruolo));
   }
 
   return profile;
 }
 
+/**
+ * Ogni ruolo va nell'area che lo lascia entrare (stessi elenchi dei
+ * controlli delle aree), cosi' un reindirizzamento non torna mai indietro
+ * in un ciclo. I ruoli storici senza area finiscono sulla vetrina.
+ */
 export function areaPerRuolo(ruolo: RuoloEnum) {
-  switch (ruolo) {
-    case "webmaster":
-    case "proprietario":
-    case "co_proprietario":
-    case "segretario":
-    case "admin":
-    case "staff":
-      return "/admin";
-    case "insegnante":
-      return "/area-insegnante";
-    default:
-      return "/area-genitore";
-  }
+  if (RUOLI_STAFF.includes(ruolo)) return "/admin";
+  if (ruolo === "insegnante") return "/area-insegnante";
+  if (ruolo === "allievo") return "/area-genitore";
+  return "/";
 }

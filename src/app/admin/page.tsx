@@ -1,5 +1,9 @@
 import { giornoRoma } from "@/lib/date";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { requireRuolo, RUOLI_STAFF, RUOLI_TITOLARI } from "@/lib/auth/dal";
+import { caricaQuote } from "@/lib/registri/dati";
+import { euro } from "@/lib/registri/costanti";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IscrizioniChart, type IscrizioniMese } from "@/components/charts/iscrizioni-chart";
 import { PresenzeChart, type PresenzaClasse } from "@/components/charts/presenze-chart";
@@ -39,24 +43,38 @@ export default async function AdminPage() {
   const seiMesiFa = giornoRoma(new Date(oggi.getFullYear(), oggi.getMonth() - 5, 1));
   const sessantaGiorniFa = giornoRoma(new Date(oggi.getTime() - 60 * 24 * 3600 * 1000));
 
-  const [studenti, classi, richieste, pagamentiSospesi] = await Promise.all([
-    supabase.from("studenti").select("id", { count: "exact", head: true }),
+  const profile = await requireRuolo(RUOLI_STAFF);
+  const titolare = RUOLI_TITOLARI.includes(profile.ruolo);
+
+  // Stesse fonti dei Registri: soci attivi, quote con stato calcolato su oggi.
+  const [soci, classi, richieste, aperte, candidature] = await Promise.all([
+    supabase.from("studenti").select("id", { count: "exact", head: true }).eq("attivo", true),
     supabase.from("classi").select("id", { count: "exact", head: true }).eq("attiva", true),
     supabase
       .from("iscrizioni")
       .select("id", { count: "exact", head: true })
       .in("stato", ["richiesta", "lista_attesa"]),
-    supabase
-      .from("pagamenti")
-      .select("id", { count: "exact", head: true })
-      .in("stato", ["da_pagare", "parziale", "scaduto"]),
+    caricaQuote({ soloAperte: true }),
+    titolare
+      ? supabase.from("candidature").select("id", { count: "exact", head: true }).eq("stato", "nuova")
+      : Promise.resolve({ count: 0 }),
   ]);
+  const inRitardo = aperte.filter((q) => q.stato === "scaduto");
 
   const stats = [
-    { titolo: "Studenti iscritti", valore: studenti.count ?? "—" },
-    { titolo: "Classi attive", valore: classi.count ?? "—" },
-    { titolo: "Iscrizioni in attesa", valore: richieste.count ?? "—" },
-    { titolo: "Pagamenti in sospeso", valore: pagamentiSospesi.count ?? "—" },
+    { titolo: "Soci attivi", valore: soci.count ?? "—", href: "/admin/registri/soci" },
+    { titolo: "Classi attive", valore: classi.count ?? "—", href: "/admin/corsi" },
+    { titolo: "Iscrizioni in attesa", valore: richieste.count ?? "—", href: "/admin/iscrizioni", allarme: (richieste.count ?? 0) > 0 },
+    {
+      titolo: "Quote in ritardo",
+      valore: inRitardo.length,
+      nota: inRitardo.length > 0 ? euro(inRitardo.reduce((t, q) => t + q.residuo, 0)) : undefined,
+      href: "/admin/registri",
+      allarme: inRitardo.length > 0,
+    },
+    ...(titolare && (candidature.count ?? 0) > 0
+      ? [{ titolo: "Candidature nuove", valore: candidature.count ?? 0, href: "/admin/candidature", allarme: true }]
+      : []),
   ];
 
   // --- Iscrizioni negli ultimi 6 mesi ---
@@ -75,17 +93,19 @@ export default async function AdminPage() {
     nuove: contIscrizioniByMese.get(m.chiave) ?? 0,
   }));
 
-  // --- Incassi negli ultimi 6 mesi ---
-  const { data: pagamentiRecenti } = await supabase
-    .from("pagamenti")
-    .select("importo_pagato, data_pagamento")
-    .not("data_pagamento", "is", null)
-    .gte("data_pagamento", seiMesiFa);
+  // --- Incassi negli ultimi 6 mesi: ricevute valide meno restituzioni, come nel rendiconto ---
+  const [{ data: versamenti }, { data: rimborsi }] = await Promise.all([
+    supabase.from("versamenti").select("importo, data").eq("annullato", false).gte("data", seiMesiFa),
+    supabase.from("rimborsi").select("importo, data").eq("annullato", false).gte("data", seiMesiFa),
+  ]);
   const totaleByMese = new Map<string, number>();
-  for (const p of pagamentiRecenti ?? []) {
-    if (!p.data_pagamento) continue;
-    const chiave = p.data_pagamento.slice(0, 7);
-    totaleByMese.set(chiave, (totaleByMese.get(chiave) ?? 0) + p.importo_pagato);
+  for (const v of versamenti ?? []) {
+    const chiave = v.data.slice(0, 7);
+    totaleByMese.set(chiave, (totaleByMese.get(chiave) ?? 0) + Number(v.importo));
+  }
+  for (const r of rimborsi ?? []) {
+    const chiave = r.data.slice(0, 7);
+    totaleByMese.set(chiave, (totaleByMese.get(chiave) ?? 0) - Number(r.importo));
   }
   const datiIncassi: IncassoMese[] = mesi6.map((m) => ({
     mese: m.etichetta,
@@ -142,16 +162,17 @@ export default async function AdminPage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-6">
         <h1 className="font-display text-3xl uppercase tracking-tight">Panoramica</h1>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {stats.map((s) => (
-            <Card key={s.titolo}>
-              <CardHeader>
-                <CardTitle className="text-muted-foreground text-sm font-normal">
-                  {s.titolo}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="font-display text-3xl text-primary">{s.valore}</CardContent>
-            </Card>
+            <Link
+              key={s.titolo}
+              href={s.href}
+              className={`panel-3d tile-press rounded-xl p-4 ${s.allarme ? "tile-red" : ""}`}
+            >
+              <p className="font-display text-[0.65rem] tracking-[0.2em] uppercase opacity-70">{s.titolo}</p>
+              <p className="mt-1 font-display text-3xl leading-none">{s.valore}</p>
+              {"nota" in s && s.nota && <p className="mt-1 text-xs opacity-75">{s.nota}</p>}
+            </Link>
           ))}
         </div>
       </div>
@@ -177,7 +198,7 @@ export default async function AdminPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Tasso di presenza per classe (ultimi 60 giorni)</CardTitle>
+          <CardTitle className="text-base">Tasso di presenza per corso (ultimi 60 giorni)</CardTitle>
         </CardHeader>
         <CardContent>
           {datiPresenze.length === 0 ? (
