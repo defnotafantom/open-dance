@@ -31,6 +31,17 @@ export type PagamentoMetodoEnum = "contanti" | "bonifico" | "pos" | "altro";
 export type PagamentoStatoEnum = "da_pagare" | "parziale" | "pagato" | "scaduto";
 export type ConsensoTipoEnum = "trattamento_dati" | "foto_video" | "newsletter";
 export type RichiestaCancellazioneStatoEnum = "in_attesa" | "completata" | "annullata";
+export type SezioneScuola = "scuola" | "aule" | "attivita" | "storia";
+export type CategoriaTraguardo =
+  | "ambizione"
+  | "concorso"
+  | "contest"
+  | "competizione"
+  | "crescita"
+  | "tappa";
+export type TipoPosizione = "personale" | "insegnante_esterno" | "masterclass";
+export type TipoCandidatura = TipoPosizione | "spontanea";
+export type StatoCandidatura = "nuova" | "in_valutazione" | "archiviata";
 
 export interface Database {
   public: {
@@ -83,6 +94,10 @@ export interface Database {
           categoria: string | null;
           livello: string | null;
           attivo: boolean;
+          pubblicato: boolean;
+          tappa: number | null;
+          eta_consigliata: string | null;
+          impatto: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["corsi"]["Row"]> & { nome: string };
@@ -342,6 +357,7 @@ export interface Database {
           specializzazioni: string | null;
           anni_esperienza: number | null;
           foto_path: string | null;
+          cv_path: string | null;
           pubblicato: boolean;
           updated_at: string;
         };
@@ -349,6 +365,87 @@ export interface Database {
           profilo_id: string;
         };
         Update: Partial<Database["public"]["Tables"]["insegnanti_profili"]["Row"]>;
+        Relationships: [];
+      };
+      scuola_contenuti: {
+        Row: {
+          id: string;
+          sezione: SezioneScuola;
+          titolo: string;
+          descrizione: string | null;
+          foto_path: string | null;
+          ordine: number;
+          pubblicato: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["scuola_contenuti"]["Row"]> & {
+          sezione: SezioneScuola;
+          titolo: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["scuola_contenuti"]["Row"]>;
+        Relationships: [];
+      };
+      traguardi: {
+        Row: {
+          id: string;
+          anno: number;
+          categoria: CategoriaTraguardo;
+          titolo: string;
+          contesto: string | null;
+          risultato: string | null;
+          foto_path: string | null;
+          ordine: number;
+          pubblicato: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["traguardi"]["Row"]> & {
+          anno: number;
+          categoria: CategoriaTraguardo;
+          titolo: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["traguardi"]["Row"]>;
+        Relationships: [];
+      };
+      posizioni_aperte: {
+        Row: {
+          id: string;
+          tipo: TipoPosizione;
+          titolo: string;
+          descrizione: string | null;
+          attiva: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["posizioni_aperte"]["Row"]> & {
+          tipo: TipoPosizione;
+          titolo: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["posizioni_aperte"]["Row"]>;
+        Relationships: [];
+      };
+      candidature: {
+        Row: {
+          id: string;
+          tipo: TipoCandidatura;
+          posizione_id: string | null;
+          nome: string;
+          cognome: string;
+          email: string;
+          telefono: string | null;
+          messaggio: string | null;
+          link_portfolio: string | null;
+          cv_path: string | null;
+          consenso_privacy: boolean;
+          stato: StatoCandidatura;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["candidature"]["Row"]> & {
+          tipo: TipoCandidatura;
+          nome: string;
+          cognome: string;
+          email: string;
+          consenso_privacy: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["candidature"]["Row"]>;
         Relationships: [];
       };
     };

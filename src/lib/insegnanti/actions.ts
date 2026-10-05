@@ -63,8 +63,8 @@ export async function caricaFotoInsegnante(formData: FormData): Promise<ActionRe
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Seleziona un'immagine da caricare." };
   }
-  if (file.size > 5 * 1024 * 1024) {
-    return { error: "L'immagine supera i 5 MB consentiti." };
+  if (file.size > 4 * 1024 * 1024) {
+    return { error: "L'immagine supera i 4 MB consentiti." };
   }
 
   const supabase = await createClient();
@@ -86,6 +86,71 @@ export async function caricaFotoInsegnante(formData: FormData): Promise<ActionRe
   }
 
   revalidatePath("/insegnanti");
+  revalidatePath(`/insegnanti/${profiloId}`);
+  revalidatePath("/area-insegnante/profilo");
+  return {};
+}
+
+/** CV in PDF, scaricabile dalla pagina pubblica dell'insegnante. */
+export async function caricaCvInsegnante(formData: FormData): Promise<ActionResult> {
+  const profile = await getProfile();
+  const profiloId = formData.get("profilo_id");
+  if (typeof profiloId !== "string") {
+    return { error: "Dati non validi." };
+  }
+  if (profile.id !== profiloId && !RUOLI_TITOLARI.includes(profile.ruolo)) {
+    return { error: "Non sei autorizzato a modificare questo profilo." };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Seleziona un PDF da caricare." };
+  }
+  if (file.size > 4 * 1024 * 1024) {
+    return { error: "Il CV supera i 4 MB consentiti." };
+  }
+  const intestazione = new TextDecoder().decode(new Uint8Array(await file.slice(0, 5).arrayBuffer()));
+  if (intestazione !== "%PDF-") {
+    return { error: "Il CV deve essere un file PDF." };
+  }
+
+  const supabase = await createClient();
+  const filePath = `${profiloId}/cv.pdf`;
+  const { error: uploadError } = await supabase.storage
+    .from("insegnanti")
+    .upload(filePath, file, { upsert: true, contentType: "application/pdf" });
+  if (uploadError) {
+    return { error: uploadError.message };
+  }
+
+  const { error } = await supabase
+    .from("insegnanti_profili")
+    .upsert({ profilo_id: profiloId, cv_path: filePath }, { onConflict: "profilo_id" });
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/insegnanti/${profiloId}`);
+  revalidatePath("/area-insegnante/profilo");
+  return {};
+}
+
+export async function rimuoviCvInsegnante(profiloId: string): Promise<ActionResult> {
+  const profile = await getProfile();
+  if (profile.id !== profiloId && !RUOLI_TITOLARI.includes(profile.ruolo)) {
+    return { error: "Non sei autorizzato a modificare questo profilo." };
+  }
+
+  const supabase = await createClient();
+  await supabase.storage.from("insegnanti").remove([`${profiloId}/cv.pdf`]);
+  const { error } = await supabase
+    .from("insegnanti_profili")
+    .update({ cv_path: null })
+    .eq("profilo_id", profiloId);
+  if (error) {
+    return { error: error.message };
+  }
+
   revalidatePath(`/insegnanti/${profiloId}`);
   revalidatePath("/area-insegnante/profilo");
   return {};

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/brand/logo";
 import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
 import { Cursor } from "@/components/marketing/cursor";
 import { Grain } from "@/components/marketing/grain";
@@ -12,13 +11,41 @@ import { Marquee } from "@/components/marketing/marquee";
 import { Magnetic } from "@/components/marketing/magnetic";
 import { DiegeticNav } from "@/components/marketing/diegetic-nav";
 import { OrbNav, type NavItem } from "@/components/layout/orb-nav";
+import { ArrowUpRightIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NAV_PUBBLICO, PublicFooter } from "@/components/marketing/public-page";
 
 const NAV_HOME: NavItem[] = [
-  { href: "#punti-forza", label: "Perché noi" },
-  { href: "/insegnanti", label: "Insegnanti" },
-  { href: "/login", label: "Accedi" },
+  ...NAV_PUBBLICO.filter((i) => i.href !== "/"),
   { href: "/registrati", label: "Registrati" },
+];
+
+const SCOPRI = [
+  {
+    href: "/scuola",
+    titolo: "La scuola",
+    testo: "Le aule, gli spazi, quello che facciamo ogni giorno e quello che abbiamo fatto.",
+  },
+  {
+    href: "/corsi",
+    titolo: "I corsi",
+    testo: "Studiare danza per gradi: le tappe del percorso e cosa sviluppa ogni corso.",
+  },
+  {
+    href: "/insegnanti",
+    titolo: "Gli insegnanti",
+    testo: "Il percorso e il curriculum di chi insegna nelle nostre sale.",
+  },
+  {
+    href: "/28-anni",
+    titolo: "Speciale 28 anni",
+    testo: "Ambizioni, concorsi, contest e crescita personale, oltre i premi.",
+  },
+  {
+    href: "/lavora-con-noi",
+    titolo: "Lavora con noi",
+    testo: "Posizioni aperte, insegnanti esterni, masterclass: invia la tua candidatura.",
+  },
 ];
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -168,18 +195,35 @@ export function HomeClient() {
         ))}
       </section>
 
-      <footer className="mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
-        <Logo size={24} />
-        <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
-        <div className="flex gap-4 text-xs">
-          <Link href="/insegnanti" className="hover:text-sidebar-foreground">
-            Insegnanti
-          </Link>
-          <Link href="/login" className="hover:text-sidebar-foreground">
-            Accesso staff
-          </Link>
+      <section className="border-t border-border px-6 py-16 sm:px-12 lg:px-24">
+        <h2 className="mb-8 font-display text-3xl uppercase tracking-tight sm:text-4xl">
+          Scopri Open Dance
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SCOPRI.map((voce, i) => (
+            <motion.div
+              key={voce.href}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+            >
+              <Link
+                href={voce.href}
+                className="group flex h-full flex-col gap-2 rounded-xl panel-3d p-6 transition-transform hover:-translate-y-1"
+              >
+                <span className="flex items-center justify-between font-display text-2xl uppercase tracking-tight group-hover:text-primary">
+                  {voce.titolo}
+                  <ArrowUpRightIcon className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+                <span className="text-sm text-muted-foreground">{voce.testo}</span>
+              </Link>
+            </motion.div>
+          ))}
         </div>
-      </footer>
+      </section>
+
+      <PublicFooter />
 
       <DiegeticNav items={NAV_HOME} aperto={scenografica} onClose={() => setScenografica(false)} />
     </main>

@@ -7,7 +7,7 @@ export default async function CorsiPage() {
   const supabase = await createClient();
   const { data: corsi, error } = await supabase
     .from("corsi")
-    .select("id, nome, descrizione, categoria, livello, attivo")
+    .select("id, nome, descrizione, categoria, livello, attivo, pubblicato, tappa, eta_consigliata, impatto")
     .order("nome");
 
   return (
@@ -29,6 +29,10 @@ export default async function CorsiPage() {
             categoria: c.categoria ?? "",
             livello: c.livello ?? "",
             attivo: c.attivo,
+            pubblicato: c.pubblicato,
+            tappa: c.tappa,
+            eta_consigliata: c.eta_consigliata ?? "",
+            impatto: c.impatto ?? "",
           }))}
         />
       )}

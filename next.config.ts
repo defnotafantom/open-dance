@@ -8,7 +8,14 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // Foto e CV arrivano via Server Action: il default di 1 MB e' troppo
+      // poco. Restiamo sotto i 4,5 MB che Vercel accetta per richiesta
+      // (file da max 4 MB + margine per l'overhead del multipart).
+      bodySizeLimit: "4.4mb",
+    },
+  },
 };
 
 export default withSerwist(nextConfig);

@@ -21,6 +21,7 @@ export async function creaCorso(input: CorsoInput): Promise<ActionResult> {
   }
 
   revalidatePath("/admin/corsi");
+  revalidatePath("/corsi");
   return {};
 }
 
@@ -39,6 +40,7 @@ export async function aggiornaCorso(id: string, input: CorsoInput): Promise<Acti
 
   revalidatePath("/admin/corsi");
   revalidatePath(`/admin/corsi/${id}`);
+  revalidatePath("/corsi");
   return {};
 }
 
@@ -51,6 +53,7 @@ export async function eliminaCorso(id: string): Promise<ActionResult> {
   }
 
   revalidatePath("/admin/corsi");
+  revalidatePath("/corsi");
   return {};
 }
 

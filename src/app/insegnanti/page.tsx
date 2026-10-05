@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Logo } from "@/components/brand/logo";
-import { Grain } from "@/components/marketing/grain";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { PublicHero, PublicPage } from "@/components/marketing/public-page";
 
 export default async function InsegnantiPage() {
   const supabase = await createClient();
@@ -28,28 +26,12 @@ export default async function InsegnantiPage() {
   }));
 
   return (
-    <main className="flex flex-1 flex-col">
-      <ThemeToggle className="fixed top-4 right-4 z-40" />
-      <section className="relative flex flex-col items-center gap-6 overflow-hidden bg-background px-6 py-20 text-center text-foreground">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 40% at 50% 0%, color-mix(in oklch, var(--primary), transparent 82%), transparent)",
-          }}
-        />
-        <Grain />
-        <Link href="/" className="relative">
-          <Logo size={32} />
-        </Link>
-        <h1 className="relative font-display text-5xl uppercase tracking-tight sm:text-6xl">
-          Gli insegnanti
-        </h1>
-        <p className="relative max-w-md text-muted-foreground">
-          Le persone che ogni settimana insegnano danza a Open Dance.
-        </p>
-      </section>
+    <PublicPage>
+      <PublicHero
+        eyebrow="Le persone di Open Dance"
+        titolo="Gli insegnanti"
+        intro="Chi ogni settimana insegna danza a Open Dance: il percorso, gli stili, il curriculum di ognuno."
+      />
 
       <section className="px-6 py-16 sm:px-12 lg:px-24">
         {conFoto.length === 0 ? (
@@ -92,10 +74,6 @@ export default async function InsegnantiPage() {
         )}
       </section>
 
-      <footer className="mt-8 flex flex-col items-center gap-3 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
-        <Logo size={24} />
-        <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
-      </footer>
-    </main>
+    </PublicPage>
   );
 }

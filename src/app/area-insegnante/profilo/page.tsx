@@ -8,12 +8,15 @@ export default async function ProfiloInsegnantePage() {
 
   const { data: profiloPubblico } = await supabase
     .from("insegnanti_profili")
-    .select("bio, carriera, specializzazioni, anni_esperienza, foto_path, pubblicato")
+    .select("bio, carriera, specializzazioni, anni_esperienza, foto_path, cv_path, pubblicato")
     .eq("profilo_id", profile.id)
     .maybeSingle();
 
   const fotoUrl = profiloPubblico?.foto_path
     ? supabase.storage.from("insegnanti").getPublicUrl(profiloPubblico.foto_path).data.publicUrl
+    : null;
+  const cvUrl = profiloPubblico?.cv_path
+    ? supabase.storage.from("insegnanti").getPublicUrl(profiloPubblico.cv_path).data.publicUrl
     : null;
 
   return (
@@ -28,6 +31,7 @@ export default async function ProfiloInsegnantePage() {
       <ProfiloInsegnanteForm
         profiloId={profile.id}
         fotoUrl={fotoUrl}
+        cvUrl={cvUrl}
         profilo={{
           bio: profiloPubblico?.bio ?? "",
           carriera: profiloPubblico?.carriera ?? "",

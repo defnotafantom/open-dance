@@ -9,6 +9,7 @@ const NAV_BASE: NavItem[] = [
   { href: "/admin/pagamenti", label: "Pagamenti" },
   { href: "/admin/eventi", label: "Eventi" },
   { href: "/admin/comunicazioni", label: "Comunicazioni" },
+  { href: "/admin/sito", label: "Sito pubblico" },
   { href: "/admin/staff", label: "Staff" },
 ];
 
@@ -19,7 +20,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // puo' effettivamente modificarli (webmaster/proprietario/co-proprietario),
   // non alla segreteria.
   const nav = RUOLI_TITOLARI.includes(profile.ruolo)
-    ? [...NAV_BASE, { href: "/admin/impostazioni", label: "Impostazioni" }]
+    ? [
+        ...NAV_BASE,
+        { href: "/admin/candidature", label: "Candidature" },
+        { href: "/admin/impostazioni", label: "Impostazioni" },
+      ]
     : NAV_BASE;
 
   return (

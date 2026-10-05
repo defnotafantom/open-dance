@@ -6,6 +6,11 @@ export const corsoSchema = z.object({
   categoria: z.string().optional(),
   livello: z.string().optional(),
   attivo: z.boolean(),
+  // Presentazione sulla pagina pubblica /corsi
+  pubblicato: z.boolean(),
+  tappa: z.number().int().min(1).max(4).nullable(),
+  eta_consigliata: z.string().max(100).optional(),
+  impatto: z.string().max(2000).optional(),
 });
 
 export type CorsoInput = z.infer<typeof corsoSchema>;
