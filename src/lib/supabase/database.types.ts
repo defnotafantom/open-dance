@@ -504,6 +504,26 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["versamenti"]["Row"]>;
         Relationships: [];
       };
+      accessi_sito: {
+        Row: {
+          id: string;
+          token: string;
+          nome: string;
+          ip: string | null;
+          user_agent: string | null;
+          stato: "in_attesa" | "approvato" | "negato" | "revocato";
+          scade_at: string | null;
+          deciso_at: string | null;
+          deciso_da: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["accessi_sito"]["Row"]> & {
+          token: string;
+          nome: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["accessi_sito"]["Row"]>;
+        Relationships: [];
+      };
       uscite: {
         Row: {
           id: string;
@@ -527,6 +547,11 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      accesso_sito_stato: {
+        Args: { p_token: string };
+        Returns: string | null;
+      };
+    };
   };
 }

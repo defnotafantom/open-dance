@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
+import { controllaRichiesta } from "./actions";
 import { CodiceForm } from "./codice-form";
 
 export const metadata: Metadata = {
@@ -7,7 +8,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function ManutenzionePage() {
+export default async function ManutenzionePage() {
+  const statoIniziale = await controllaRichiesta();
   return (
     <main className="dark flex min-h-dvh flex-1 flex-col items-center justify-center gap-10 bg-background px-6 text-center text-foreground">
       <div className="flex flex-col items-center gap-6">
@@ -25,7 +27,7 @@ export default function ManutenzionePage() {
           Stiamo preparando il nuovo sito. Torna a trovarci presto.
         </p>
       </div>
-      <CodiceForm />
+      <CodiceForm statoIniziale={statoIniziale} />
     </main>
   );
 }

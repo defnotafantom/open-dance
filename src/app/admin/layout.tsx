@@ -24,6 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nav = RUOLI_TITOLARI.includes(profile.ruolo)
     ? [
         ...NAV_BASE,
+        { href: "/admin/accessi", label: "Accessi al sito" },
         { href: "/admin/candidature", label: "Candidature" },
         { href: "/admin/impostazioni", label: "Impostazioni" },
       ]

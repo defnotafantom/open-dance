@@ -1,25 +1,91 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { COOKIE_ACCESSO, impronta } from "@/lib/manutenzione";
+import { cookies, headers } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { inviaPushAProfili } from "@/lib/push/send";
+import { RUOLI_TITOLARI } from "@/lib/supabase/database.types";
+import { COOKIE_ACCESSO, codiceAccesso } from "@/lib/manutenzione";
 
-export async function entra(_stato: { error?: string } | undefined, formData: FormData) {
-  const inserito = String(formData.get("codice") ?? "").trim();
-  const codice = process.env.MANUTENZIONE_CODICE;
+export type StatoRichiesta = {
+  error?: string;
+  inviata?: boolean;
+};
 
-  if (!codice || !inserito || (await impronta(inserito)) !== (await impronta(codice))) {
+/** Codice + nome: crea la richiesta e avvisa i titolari sul telefono. */
+export async function richiediAccesso(
+  _stato: StatoRichiesta | undefined,
+  formData: FormData
+): Promise<StatoRichiesta> {
+  const codice = String(formData.get("codice") ?? "").trim();
+  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
+
+  if (codice !== codiceAccesso()) {
     // Rallenta i tentativi a raffica.
     await new Promise((r) => setTimeout(r, 1500));
     return { error: "Codice non valido." };
   }
+  if (nome.length < 2) {
+    return { error: "Scrivi il tuo nome, così sappiamo chi sta chiedendo l'accesso." };
+  }
 
-  (await cookies()).set(COOKIE_ACCESSO, await impronta(codice), {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
+  const admin = createAdminClient();
+
+  if (ip) {
+    const unOraFa = new Date(Date.now() - 3600 * 1000).toISOString();
+    const { count } = await admin
+      .from("accessi_sito")
+      .select("id", { count: "exact", head: true })
+      .eq("ip", ip)
+      .gte("created_at", unOraFa);
+    if ((count ?? 0) >= 5) {
+      return { error: "Troppe richieste da questa connessione. Riprova più tardi." };
+    }
+  }
+
+  const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
+  const { error } = await admin.from("accessi_sito").insert({
+    token,
+    nome,
+    ip,
+    user_agent: h.get("user-agent")?.slice(0, 300) ?? null,
+  });
+  if (error) {
+    return { error: "Non è stato possibile inviare la richiesta, riprova." };
+  }
+
+  (await cookies()).set(COOKIE_ACCESSO, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 60,
   });
-  redirect("/");
+
+  const { data: titolari } = await admin.from("profiles").select("id").in("ruolo", RUOLI_TITOLARI);
+  try {
+    await inviaPushAProfili(
+      (titolari ?? []).map((t) => t.id),
+      {
+        title: "Richiesta di accesso al sito",
+        body: `${nome} ha inserito il codice e chiede di entrare.`,
+        url: "/admin/accessi",
+      }
+    );
+  } catch {
+    // la richiesta resta comunque visibile in "Accessi al sito"
+  }
+
+  return { inviata: true };
+}
+
+/** Il visitatore in attesa chiede a che punto e' la sua richiesta. */
+export async function controllaRichiesta(): Promise<string | null> {
+  const token = (await cookies()).get(COOKIE_ACCESSO)?.value;
+  if (!token) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("accesso_sito_stato", { p_token: token });
+  return data ?? null;
 }
