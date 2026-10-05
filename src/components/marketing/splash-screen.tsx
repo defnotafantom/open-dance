@@ -51,7 +51,7 @@ export function SplashScreen() {
   }
 
   // Le pagine di stampa (ricevute) non devono mai essere coperte dalla splash.
-  if (giaVista || rimossa || pathname.startsWith("/stampa")) return null;
+  if (giaVista || rimossa || pathname.startsWith("/stampa") || pathname === "/manutenzione") return null;
 
   return (
     <div
