@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
-import { controllaRichiesta } from "./actions";
+import { leggiStatoRichiesta } from "./actions";
 import { CodiceForm } from "./codice-form";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ManutenzionePage() {
-  const statoIniziale = await controllaRichiesta();
+  const statoIniziale = await leggiStatoRichiesta();
   return (
     <main className="dark flex min-h-dvh flex-1 flex-col items-center justify-center gap-10 bg-background px-6 text-center text-foreground">
       <div className="flex flex-col items-center gap-6">

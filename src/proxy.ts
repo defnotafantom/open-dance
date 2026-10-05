@@ -1,6 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { COOKIE_ACCESSO, manutenzioneAttiva, percorsoLibero, percorsoLogin } from "@/lib/manutenzione";
+import {
+  COOKIE_ACCESSO,
+  COOKIE_ATTIVITA,
+  MINUTI_INATTIVITA,
+  manutenzioneAttiva,
+  opzioniCookieSessione,
+  percorsoLibero,
+  percorsoLogin,
+} from "@/lib/manutenzione";
 import type { Database } from "@/lib/supabase/database.types";
 
 const AREE_PROTETTE = ["/admin", "/area-insegnante", "/area-genitore", "/stampa"];
@@ -47,26 +55,44 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Sito chiuso (involucro esterno): chi non ha una sessione entra solo con
-  // una richiesta approvata dal webmaster, ricontrollata a ogni pagina.
-  if (manutenzioneAttiva() && !isAuthenticated && !percorsoLibero(path)) {
+  // Involucro esterno: si passa solo con una richiesta approvata dal
+  // webmaster, valida per la sessione del browser e scaduta dopo
+  // MINUTI_INATTIVITA senza richieste. Vale anche per chi ha fatto il login.
+  if (manutenzioneAttiva() && !percorsoLibero(path)) {
     const token = request.cookies.get(COOKIE_ACCESSO)?.value;
     const { data: stato } = token
       ? await supabase.rpc("accesso_sito_stato", { p_token: token })
       : { data: null };
-    const loginDiEmergenza =
-      stato !== "approvato" &&
-      percorsoLogin(path) &&
-      !(await supabase.rpc("webmaster_ha_notifiche")).data;
-    if (stato !== "approvato" && !loginDiEmergenza) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/manutenzione";
-      url.search = "";
-      const risposta = NextResponse.redirect(url);
-      risposta.headers.set("X-Robots-Tag", "noindex, nofollow");
-      return risposta;
+    const ultimaAttivita = Number(request.cookies.get(COOKIE_ATTIVITA)?.value);
+    const inattivo =
+      !ultimaAttivita || Date.now() - ultimaAttivita > MINUTI_INATTIVITA * 60 * 1000;
+
+    if (stato === "approvato" && !inattivo) {
+      response.cookies.set(COOKIE_ATTIVITA, String(Date.now()), opzioniCookieSessione);
+    } else {
+      // Finche' il webmaster non ha attivato le notifiche, il login resta
+      // raggiungibile e chi ha una sessione entra: e' l'unico modo per
+      // attivarle senza restare chiusi fuori.
+      const emergenza =
+        (isAuthenticated || percorsoLogin(path)) &&
+        !(await supabase.rpc("webmaster_ha_notifiche")).data;
+
+      if (!emergenza) {
+        // Fuori da tutti gli involucri: si chiude anche il login.
+        if (isAuthenticated) await supabase.auth.signOut({ scope: "local" });
+        const url = request.nextUrl.clone();
+        url.pathname = "/manutenzione";
+        url.search = "";
+        const risposta = NextResponse.redirect(url);
+        for (const c of response.cookies.getAll()) risposta.cookies.set(c);
+        if (stato !== "in_attesa") risposta.cookies.delete(COOKIE_ACCESSO);
+        risposta.cookies.delete(COOKIE_ATTIVITA);
+        risposta.headers.set("X-Robots-Tag", "noindex, nofollow");
+        return risposta;
+      }
     }
   }
+
   const isAreaProtetta = AREE_PROTETTE.some((p) => path.startsWith(p));
   const isSoloOspiti = SOLO_OSPITI.some((p) => path.startsWith(p));
 

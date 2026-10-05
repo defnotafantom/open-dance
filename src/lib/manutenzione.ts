@@ -6,10 +6,25 @@
  * proprio nome: parte una richiesta che SOLO il webmaster riceve come
  * notifica sul telefono e approva o nega dal link della notifica. Il cookie contiene solo un token
  * casuale; il permesso sta nel database, quindi una revoca vale subito.
- * Il login sta dentro l'involucro; chi ha gia' una sessione entra. In sviluppo e' attivo solo se
+ * Il login sta dentro l'involucro: anche chi ha un account passa dal codice
+ * a ogni nuova sessione del browser o dopo MINUTI_INATTIVITA di inattivita'. In sviluppo e' attivo solo se
  * MANUTENZIONE=on in .env.local, per provarlo.
  */
 export const COOKIE_ACCESSO = "od_accesso";
+/** Ora dell'ultima richiesta: oltre MINUTI_INATTIVITA si torna al codice. */
+export const COOKIE_ATTIVITA = "od_attivita";
+export const MINUTI_INATTIVITA = 15;
+
+/**
+ * Cookie di sessione (nessuna scadenza esplicita): spariscono quando si
+ * chiude il browser, e alla riapertura si riparte dal codice.
+ */
+export const opzioniCookieSessione = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+};
 
 /** Il codice e' solo il primo filtro: senza approvazione non si entra. */
 export function codiceAccesso() {

@@ -3,6 +3,8 @@ import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SplashScreen } from "@/components/marketing/splash-screen";
+import { GuardiaSessione } from "@/components/guardia-sessione";
+import { MINUTI_INATTIVITA, manutenzioneAttiva } from "@/lib/manutenzione";
 import "./globals.css";
 
 // Un'unica famiglia, ricavata dalla scritta "OPEN DANCE" del logo:
@@ -59,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <SplashScreen />
+          {manutenzioneAttiva() && <GuardiaSessione minuti={MINUTI_INATTIVITA} />}
           {children}
           <Toaster />
         </ThemeProvider>

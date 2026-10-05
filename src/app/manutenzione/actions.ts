@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { inviaPushAProfili } from "@/lib/push/send";
-import { COOKIE_ACCESSO, codiceAccesso } from "@/lib/manutenzione";
+import { COOKIE_ACCESSO, COOKIE_ATTIVITA, codiceAccesso, opzioniCookieSessione } from "@/lib/manutenzione";
 import { firmaRichiesta } from "@/lib/accessi/firma";
 
 export type StatoRichiesta = {
@@ -60,13 +60,8 @@ export async function richiediAccesso(
     return { error: "Non è stato possibile inviare la richiesta, riprova." };
   }
 
-  (await cookies()).set(COOKIE_ACCESSO, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 60,
-  });
+  // Cookie di sessione: chiuso il browser, si riparte dal codice.
+  (await cookies()).set(COOKIE_ACCESSO, token, opzioniCookieSessione);
 
   const { data: webmaster } = await admin.from("profiles").select("id").eq("ruolo", "webmaster");
   try {
@@ -85,11 +80,21 @@ export async function richiediAccesso(
   return { inviata: true };
 }
 
-/** Il visitatore in attesa chiede a che punto e' la sua richiesta. */
-export async function controllaRichiesta(): Promise<string | null> {
+/** Sola lettura (usabile anche durante il render della pagina). */
+export async function leggiStatoRichiesta(): Promise<string | null> {
   const token = (await cookies()).get(COOKIE_ACCESSO)?.value;
   if (!token) return null;
   const supabase = await createClient();
   const { data } = await supabase.rpc("accesso_sito_stato", { p_token: token });
+  return data ?? null;
+}
+
+/** Il visitatore in attesa chiede a che punto e' la sua richiesta. */
+export async function controllaRichiesta(): Promise<string | null> {
+  const data = await leggiStatoRichiesta();
+  if (data === "approvato") {
+    // Appena approvato: parte il conteggio dell'inattivita'.
+    (await cookies()).set(COOKIE_ATTIVITA, String(Date.now()), opzioniCookieSessione);
+  }
   return data ?? null;
 }

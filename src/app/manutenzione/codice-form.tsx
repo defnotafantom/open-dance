@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { controllaRichiesta, richiediAccesso } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -27,10 +26,14 @@ export function CodiceForm({ statoIniziale }: { statoIniziale: string | null }) 
     return () => clearInterval(timer);
   }, [inAttesa, router]);
 
+  // Gia' approvato (es. pagina ricaricata): fa partire la sessione ed entra.
+  useEffect(() => {
+    if (statoIniziale !== "approvato") return;
+    controllaRichiesta().then(() => router.replace("/"));
+  }, [statoIniziale, router]);
+
   if (esito === "approvato") {
-    return (
-      <Button nativeButton={false} render={<Link href="/">Entra nel sito</Link>} />
-    );
+    return <p className="font-display text-sm tracking-[0.15em] uppercase">Accesso in corso...</p>;
   }
 
   if (inAttesa && esito !== "negato" && esito !== "revocato") {
