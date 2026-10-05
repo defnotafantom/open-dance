@@ -7,11 +7,13 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-barlow);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  --font-display: var(--font-anton);
-  --font-script: var(--font-alex-brush);
+  /* Titoli, numeri ed etichette: Barlow Condensed 700 (unico peso caricato). */
+  --font-display: var(--font-barlow-condensed);
+  /* La scritta del marchio "OPEN DANCE", molto spaziata: Barlow Condensed 300. */
+  --font-wordmark: var(--font-barlow-condensed-light);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -83,72 +85,91 @@
 }
 
 :root {
-  --background: oklch(0.968 0.003 67.8);
-  --foreground: oklch(0.190 0.010 67.1);
-  --card: oklch(0.986 0.002 67.8);
-  --card-foreground: oklch(0.190 0.010 67.1);
-  --popover: oklch(0.986 0.002 67.8);
-  --popover-foreground: oklch(0.190 0.010 67.1);
-  --primary: oklch(0.457 0.171 24);
-  --primary-foreground: oklch(0.98 0.01 85);
-  --secondary: oklch(0.93 0.004 67.8);
-  --secondary-foreground: oklch(0.24 0.01 67.1);
-  --muted: oklch(0.93 0.004 67.8);
-  --muted-foreground: oklch(0.5 0.012 60);
-  --accent: oklch(0.93 0.02 24);
-  --accent-foreground: oklch(0.457 0.171 24);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.006 60);
-  --input: oklch(0.88 0.006 60);
-  --ring: oklch(0.457 0.171 24 / 50%);
-  --chart-1: oklch(0.457 0.171 24);
-  --chart-2: oklch(0.6 0.12 40);
-  --chart-3: oklch(0.556 0 0);
-  --chart-4: oklch(0.439 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: oklch(0.96 0.005 25);
-  --sidebar-primary: oklch(0.457 0.171 24);
-  --sidebar-primary-foreground: oklch(0.98 0.01 85);
-  --sidebar-accent: oklch(0.22 0.03 24);
-  --sidebar-accent-foreground: oklch(0.96 0.005 25);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.457 0.171 24 / 50%);
+  /* Palette "siderale": bianco ghiaccio, grigio siderale, rosso acceso, nero. */
+  --ice: #eef1f4;
+  --sider: #8b929b;
+  --ink: #0b0c0e;
+  --red: #e3121f;
+
+  --background: var(--ice);
+  --foreground: var(--ink);
+  --card: #f7f9fa;
+  --card-foreground: var(--ink);
+  --popover: #f7f9fa;
+  --popover-foreground: var(--ink);
+  --primary: var(--red);
+  --primary-foreground: #ffffff;
+  --secondary: #e1e5ea;
+  --secondary-foreground: var(--ink);
+  --muted: #e1e5ea;
+  --muted-foreground: #5f666f;
+  --accent: #e1e5ea;
+  --accent-foreground: var(--ink);
+  --destructive: #c40d19;
+  --border: #d3d8de;
+  --input: #cbd1d8;
+  --ring: rgb(227 18 31 / 45%);
+  --chart-1: var(--red);
+  --chart-2: var(--sider);
+  --chart-3: #2a2e34;
+  --chart-4: #c4cad1;
+  --chart-5: #5f666f;
+  --radius: 1.25rem; /* rounded-xl = 1.75rem: la curva della O del logo */
+  --sidebar: var(--ink);
+  --sidebar-foreground: var(--ice);
+  --sidebar-primary: var(--red);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f2226;
+  --sidebar-accent-foreground: var(--ice);
+  --sidebar-border: rgb(255 255 255 / 8%);
+  --sidebar-ring: rgb(227 18 31 / 45%);
+
+  /* Il materiale unico del sito: tassello in plastica estruso verso il
+     basso, luce dall'alto. Stessa profondita' del monogramma OD. */
+  --tile-face: linear-gradient(180deg, #ffffff, #e9edf1);
+  --tile-side: #bcc3cb;
+  --tile-hi: rgb(255 255 255 / 70%);
+  --tile-amb: rgb(70 80 95 / 28%);
+  --tile-d: 5px;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.525 0.185 23.4);
-  --primary-foreground: oklch(0.98 0.01 85);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.28 0.05 24);
-  --accent-foreground: oklch(0.94 0.03 24);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.525 0.185 23.4 / 50%);
-  --chart-1: oklch(0.525 0.185 23.4);
-  --chart-2: oklch(0.65 0.13 40);
-  --chart-3: oklch(0.556 0 0);
-  --chart-4: oklch(0.439 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: oklch(0.96 0.005 25);
-  --sidebar-primary: oklch(0.525 0.185 23.4);
-  --sidebar-primary-foreground: oklch(0.98 0.01 85);
-  --sidebar-accent: oklch(0.22 0.03 24);
-  --sidebar-accent-foreground: oklch(0.96 0.005 25);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.525 0.185 23.4 / 50%);
+  --background: var(--ink);
+  --foreground: var(--ice);
+  --card: #1f2226;
+  --card-foreground: var(--ice);
+  --popover: #1a1d21;
+  --popover-foreground: var(--ice);
+  --primary: #f01e2b;
+  --primary-foreground: #ffffff;
+  --secondary: #24272c;
+  --secondary-foreground: var(--ice);
+  --muted: #24272c;
+  --muted-foreground: var(--sider);
+  --accent: #2a2e34;
+  --accent-foreground: var(--ice);
+  --destructive: #ff4d57;
+  --border: rgb(255 255 255 / 9%);
+  --input: rgb(255 255 255 / 14%);
+  --ring: rgb(240 30 43 / 50%);
+  --chart-1: #f01e2b;
+  --chart-2: var(--sider);
+  --chart-3: #c4cad1;
+  --chart-4: #4a5058;
+  --chart-5: #eef1f4;
+  --sidebar: #050607;
+  --sidebar-foreground: var(--ice);
+  --sidebar-primary: #f01e2b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f2226;
+  --sidebar-accent-foreground: var(--ice);
+  --sidebar-border: rgb(255 255 255 / 8%);
+  --sidebar-ring: rgb(240 30 43 / 50%);
+
+  --tile-face: linear-gradient(180deg, #2c3036, #1f2226);
+  --tile-side: #050607;
+  --tile-hi: rgb(255 255 255 / 8%);
+  --tile-amb: rgb(0 0 0 / 80%);
 }
 
 @layer base {
@@ -163,19 +184,84 @@
   }
 }
 
-/* Pannelli "a profondità": stessa gerarchia visiva dei bordi netti, ottenuta
-   con luce/ombra invece che con un tratto — coerente con la direzione
-   grafica "Spotlight Orbit". */
+/* ===== Il tassello: unico materiale 3D del sito =====
+   panel-3d resta il nome usato da card e pannelli in tutta l'app. */
 @utility panel-3d {
-  background-color: var(--card);
+  background: var(--tile-face);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 14px 28px -18px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+    inset 0 1px 0 var(--tile-hi),
+    0 var(--tile-d) 0 var(--tile-side),
+    0 calc(var(--tile-d) + 12px) 20px -10px var(--tile-amb);
 }
-.dark .panel-3d {
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 16px 32px -16px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
+
+/* Variante rossa: solo per il logo e l'azione principale. */
+@utility tile-red {
+  --tile-face: linear-gradient(180deg, #ff2d3a, #d10f1b);
+  --tile-side: #7c0810;
+  --tile-hi: rgb(255 255 255 / 35%);
+  --tile-amb: rgb(227 18 31 / 45%);
+  color: #ffffff;
+}
+
+/* Variante "inchiostro": nero sul chiaro, ghiaccio sullo scuro. Per
+   mettere in evidenza un riquadro senza usare il rosso. */
+@utility tile-ink {
+  --tile-face: linear-gradient(180deg, #1b1d21, #0b0c0e);
+  --tile-side: #000000;
+  --tile-hi: rgb(255 255 255 / 8%);
+  color: var(--ice);
+  .dark & {
+    --tile-face: linear-gradient(180deg, #eef1f4, #d5dae0);
+    --tile-side: #8b929b;
+    --tile-hi: rgb(255 255 255 / 70%);
+    color: var(--ink);
+  }
+}
+
+/* Il tassello si abbassa quando lo premi, come un tasto. */
+@utility tile-press {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  &:active {
+    transform: translateY(calc(var(--tile-d) - 2px));
+    box-shadow:
+      inset 0 1px 0 var(--tile-hi),
+      0 2px 0 var(--tile-side),
+      0 6px 10px -6px var(--tile-amb);
+  }
+}
+
+/* Numeri in rilievo rosso (il "28"): stessa estrusione del monogramma. */
+@utility text-estruso {
+  color: var(--red);
+  text-shadow:
+    0 1px 0 #b80c17,
+    0 2px 0 #a00a14,
+    0 3px 0 #8e0912,
+    0 4px 0 #7c0810,
+    0 5px 0 #6a060d,
+    0 6px 0 #58050b,
+    0 16px 18px rgb(227 18 31 / 30%);
+}
+
+@keyframes od-ondeggia {
+  0%,
+  100% {
+    transform: rotateX(14deg) rotateY(-10deg);
+  }
+  50% {
+    transform: rotateX(8deg) rotateY(10deg);
+  }
+}
+
+/* Le due istanze di Barlow Condensed (700 e 300) condividono la famiglia:
+   il peso va fissato, altrimenti un testo "normale" prende il 300. */
+@layer base {
+  .font-display {
+    font-weight: 700;
+  }
+  .font-wordmark {
+    font-weight: 300;
+  }
 }

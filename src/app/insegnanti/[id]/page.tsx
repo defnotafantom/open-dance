@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { nomiInsegnantiPubblici } from "@/lib/insegnanti/pubblici";
-import { Grain } from "@/components/marketing/grain";
 import { PublicPage } from "@/components/marketing/public-page";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
@@ -47,15 +46,6 @@ export default async function InsegnanteProfiloPage({
   return (
     <PublicPage>
       <section className="relative overflow-hidden bg-background text-foreground">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 40% at 50% 0%, color-mix(in oklch, var(--primary), transparent 82%), transparent)",
-          }}
-        />
-        <Grain />
         <div className="relative flex flex-col gap-8 px-6 pt-24 pb-16 sm:px-12 lg:px-24 lg:pt-28 lg:pb-24">
           <Link
             href="/insegnanti"

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { Grain } from "@/components/marketing/grain";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { OrbNav, type NavItem } from "@/components/layout/orb-nav";
 
@@ -15,6 +14,17 @@ export const NAV_PUBBLICO: NavItem[] = [
   { href: "/login", label: "Accedi" },
 ];
 
+/** Etichetta piccola sopra i titoli: condensato spaziato, in rosso. */
+export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <p
+      className={`font-display text-[0.7rem] tracking-[0.32em] text-primary uppercase ${className ?? ""}`}
+    >
+      {children}
+    </p>
+  );
+}
+
 export function PublicHero({
   eyebrow,
   titolo,
@@ -27,25 +37,12 @@ export function PublicHero({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="relative flex flex-col items-center gap-6 overflow-hidden bg-background px-6 pt-24 pb-16 text-center text-foreground sm:pt-28 sm:pb-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 45% at 50% 0%, color-mix(in oklch, var(--primary), transparent 80%), transparent)",
-        }}
-      />
-      <Grain />
-      {eyebrow && (
-        <p className="relative text-xs font-semibold tracking-[0.32em] text-primary uppercase">
-          {eyebrow}
-        </p>
-      )}
-      <h1 className="relative max-w-4xl font-display text-5xl leading-[0.9] uppercase tracking-tight text-balance sm:text-6xl lg:text-7xl">
+    <section className="flex flex-col items-center gap-5 bg-background px-6 pt-28 pb-14 text-center text-foreground sm:pt-32 sm:pb-20">
+      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+      <h1 className="max-w-4xl font-display text-5xl leading-[0.92] uppercase text-balance sm:text-6xl lg:text-7xl">
         {titolo}
       </h1>
-      {intro && <div className="relative max-w-xl text-muted-foreground">{intro}</div>}
+      {intro && <div className="max-w-xl text-muted-foreground">{intro}</div>}
       {children}
     </section>
   );
@@ -53,8 +50,8 @@ export function PublicHero({
 
 export function PublicFooter() {
   return (
-    <footer className="mt-auto flex flex-col items-center gap-4 bg-sidebar px-6 py-10 text-sidebar-foreground/60">
-      <Logo size={24} />
+    <footer className="mt-auto flex flex-col items-center gap-5 bg-sidebar px-6 py-12 text-sidebar-foreground/60">
+      <Logo size={28} className="text-sidebar-foreground" />
       <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs">
         {NAV_PUBBLICO.filter((i) => i.href !== "/").map((i) => (
           <Link key={i.href} href={i.href} className="hover:text-sidebar-foreground">
@@ -62,7 +59,9 @@ export function PublicFooter() {
           </Link>
         ))}
       </nav>
-      <p className="text-xs">&copy; {new Date().getFullYear()} Open Dance &mdash; dal 1999</p>
+      <p className="font-wordmark text-xs tracking-[0.3em] uppercase">
+        Since 1999 &middot; Terme Vigliatore
+      </p>
     </footer>
   );
 }
@@ -81,7 +80,7 @@ export function PublicPage({ children }: { children: React.ReactNode }) {
 /** Messaggio per le sezioni non ancora compilate dallo staff. */
 export function InArrivo({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mx-auto max-w-md rounded-lg border border-dashed border-border px-6 py-10 text-center text-sm text-muted-foreground">
+    <p className="mx-auto max-w-md rounded-[1.75rem] border-2 border-dashed border-border px-6 py-10 text-center text-sm text-muted-foreground">
       {children}
     </p>
   );

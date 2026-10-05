@@ -50,11 +50,11 @@ export function OrbNav({
           setAperto(true);
         }}
         aria-label="Apri il menu"
-        className="fixed top-4 left-4 z-40 flex size-11 items-center justify-center rounded-full bg-card shadow-[0_10px_24px_-8px_color-mix(in_oklch,var(--primary),transparent_35%)] ring-1 ring-foreground/10"
+        className="panel-3d tile-press fixed top-4 left-4 z-40 flex h-11 w-14 items-center justify-center rounded-full [--tile-d:4px]"
         style={{ visibility: aperto ? "hidden" : "visible" }}
         transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
       >
-        <OdGlyphMark className="w-6" />
+        <OdGlyphMark className="w-7" />
       </motion.button>
 
       <AnimatePresence>
@@ -114,7 +114,7 @@ export function OrbNav({
                       onClick={chiudi}
                       className="group flex items-baseline gap-3 border-t border-foreground/8 px-5 py-3.5 first:border-t-0"
                     >
-                      <span className="w-6 shrink-0 font-mono text-xs text-primary">
+                      <span className="w-6 shrink-0 font-display text-sm text-primary">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <span

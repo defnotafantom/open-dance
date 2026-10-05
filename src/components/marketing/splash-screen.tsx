@@ -4,7 +4,6 @@ import { useState, useSyncExternalStore } from "react";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { ChevronRightIcon } from "lucide-react";
 import { OdGlyphMark } from "@/components/brand/od-glyph-mark";
-import { Grain } from "@/components/marketing/grain";
 import { vibrataConferma } from "@/lib/haptics";
 
 const CHIAVE_SESSIONE = "od-splash-vista";
@@ -53,41 +52,29 @@ export function SplashScreen() {
 
   return (
     <div
-      className="dark fixed inset-0 z-[200] flex flex-col items-center justify-center gap-16 overflow-hidden bg-background px-6 transition-opacity duration-500"
-      style={{
-        opacity: sbloccato ? 0 : 1,
-        background:
-          "radial-gradient(120% 70% at 50% -6%, oklch(0.32 0.006 60 / 60%) 0%, transparent 60%), radial-gradient(150% 100% at 50% 112%, oklch(0.03 0 0) 0%, oklch(0.1 0.004 60) 100%)",
-      }}
+      className="dark fixed inset-0 z-[200] flex flex-col items-center justify-center gap-16 overflow-hidden bg-background px-6 text-foreground transition-opacity duration-500"
+      style={{ opacity: sbloccato ? 0 : 1 }}
     >
-      <Grain />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[6%] mx-auto size-[520px] animate-[od-splash-pulse_3.6s_ease-in-out_infinite] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, color-mix(in oklch, var(--primary), transparent 68%) 0%, color-mix(in oklch, var(--primary), transparent 90%) 45%, transparent 72%)",
-        }}
-      />
-
-      <div className="relative flex flex-col items-center gap-6">
-        <OdGlyphMark className="w-[230px] drop-shadow-[0_30px_40px_rgba(0,0,0,0.55)]" />
-        <div
-          aria-hidden
-          className="h-[18px] w-[170px] rounded-full"
-          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.6) 0%, transparent 72%)" }}
-        />
-        <span className="font-display text-sm tracking-[0.32em] text-foreground/70 uppercase">
-          Open Dance
-        </span>
+      <div className="relative flex flex-col items-center gap-8">
+        <div className="[perspective:800px]">
+          <div className="animate-[od-ondeggia_8s_ease-in-out_infinite]">
+            <OdGlyphMark estruso className="w-[230px] drop-shadow-[0_24px_20px_rgb(142_9_18/0.35)]" />
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="pl-[0.6em] font-wordmark text-lg tracking-[0.6em] uppercase">Open Dance</span>
+          <span className="pl-[0.32em] font-display text-[0.65rem] tracking-[0.32em] text-muted-foreground uppercase">
+            Since 1999
+          </span>
+        </div>
       </div>
 
       <div className="relative flex flex-col items-center gap-4">
-        <p className="text-xs tracking-[0.16em] text-foreground/50 uppercase">
+        <p className="font-display text-[0.7rem] tracking-[0.3em] text-muted-foreground uppercase">
           Trascina per sbloccare
         </p>
         <div
-          className="relative flex items-center rounded-full bg-foreground/8 ring-1 ring-foreground/10"
+          className="panel-3d relative flex items-center rounded-full [--tile-d:4px]"
           style={{ width: LARGHEZZA_TRACCIA, height: DIMENSIONE_MANIGLIA }}
         >
           <motion.div
@@ -95,8 +82,7 @@ export function SplashScreen() {
             className="absolute top-0 left-0 h-full rounded-full"
             style={{
               width: larghezzaRiempimento,
-              background:
-                "linear-gradient(90deg, color-mix(in oklch, var(--primary), transparent 55%), var(--primary))",
+              background: "linear-gradient(90deg, rgb(227 18 31 / 25%), var(--red))",
             }}
           />
           <span
@@ -120,15 +106,15 @@ export function SplashScreen() {
             onClick={sblocca}
             whileTap={{ scale: 0.94 }}
             style={{ x, width: DIMENSIONE_MANIGLIA, height: DIMENSIONE_MANIGLIA }}
-            className="relative z-10 flex touch-none items-center justify-center rounded-full bg-gradient-to-br from-[#2c2c2c] to-[#0a0a0a] shadow-[0_10px_22px_-6px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.08)_inset]"
+            className="panel-3d tile-red relative z-10 flex touch-none items-center justify-center rounded-full [--tile-d:3px]"
           >
-            <OdGlyphMark className="w-6" />
+            <span className="font-display text-xs tracking-[0.1em]">OD</span>
           </motion.button>
         </div>
         <button
           type="button"
           onClick={sblocca}
-          className="text-[11px] text-foreground/35 underline-offset-4 hover:text-foreground/60 hover:underline"
+          className="font-display text-[0.65rem] tracking-[0.25em] text-muted-foreground uppercase hover:text-foreground"
         >
           Salta
         </button>

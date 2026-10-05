@@ -24,7 +24,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-0.5 rounded-full bg-foreground/6 p-0.5 ring-1 ring-foreground/8",
+        "panel-3d flex items-center gap-1 rounded-full p-1 [--tile-d:4px]",
         className
       )}
     >
@@ -33,8 +33,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         aria-label="Tema chiaro"
         onClick={() => setTheme("light")}
         className={cn(
-          "flex size-6 items-center justify-center rounded-full transition-colors",
-          !scuro && "bg-card shadow-sm"
+          "flex size-7 items-center justify-center rounded-full transition-colors",
+          !scuro && "bg-foreground/8"
         )}
       >
         <SunIcon className={cn("size-3.5", !scuro ? "text-foreground" : "text-muted-foreground/60")} />
@@ -44,8 +44,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         aria-label="Tema scuro"
         onClick={() => setTheme("dark")}
         className={cn(
-          "flex size-6 items-center justify-center rounded-full transition-colors",
-          scuro && "bg-primary shadow-sm"
+          "flex size-7 items-center justify-center rounded-full transition-colors",
+          scuro && "bg-primary"
         )}
       >
         <MoonIcon className={cn("size-3.5", scuro ? "text-primary-foreground" : "text-muted-foreground/60")} />
