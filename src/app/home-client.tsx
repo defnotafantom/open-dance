@@ -14,10 +14,11 @@ import { OrbNav, type NavItem } from "@/components/layout/orb-nav";
 import { ArrowUpRightIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NAV_PUBBLICO, PublicFooter } from "@/components/marketing/public-page";
+import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
 
 const NAV_HOME: NavItem[] = [
   ...NAV_PUBBLICO.filter((i) => i.href !== "/"),
-  { href: "/registrati", label: "Registrati" },
+  ...(REGISTRAZIONI_APERTE ? [{ href: "/registrati", label: "Registrati" }] : []),
 ];
 
 const SCOPRI = [
@@ -157,7 +158,13 @@ export function HomeClient() {
                 size="lg"
                 nativeButton={false}
                 variant="outline"
-                render={<Link href="/registrati">Registrati</Link>}
+                render={
+                  REGISTRAZIONI_APERTE ? (
+                    <Link href="/registrati">Registrati</Link>
+                  ) : (
+                    <Link href="/corsi">Scopri i corsi</Link>
+                  )
+                }
               />
             </Magnetic>
           </motion.div>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { areaPerRuolo } from "@/lib/auth/dal";
+import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
 import {
   loginSchema,
   registratiSchema,
@@ -53,6 +54,10 @@ export async function registrati(
   _state: FormState,
   formData: FormData
 ): Promise<FormState> {
+  if (!REGISTRAZIONI_APERTE) {
+    return { error: "Le registrazioni online non sono ancora aperte: contatta la scuola." };
+  }
+
   const parsed = registratiSchema.safeParse({
     nome: formData.get("nome"),
     cognome: formData.get("cognome"),

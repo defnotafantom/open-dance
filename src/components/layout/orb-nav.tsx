@@ -144,6 +144,13 @@ export function OrbNav({
                     </div>
                   </div>
                   <PushToggle />
+                  <Link
+                    href="/recupera-password/conferma"
+                    onClick={chiudi}
+                    className="text-center text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Cambia password
+                  </Link>
                   <form action={logout}>
                     <Button type="submit" variant="outline" size="sm" className="w-full">
                       Esci

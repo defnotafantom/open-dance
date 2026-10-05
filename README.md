@@ -32,7 +32,9 @@ email da un Proprietario/Co-Proprietario, per sicurezza.
   nuove iscrizioni e degli incassi degli ultimi mesi, tasso di presenza per
   classe.
 - **Corsi e classi** — creazione dei corsi (nome, categoria, livello) e delle
-  classi (giorno, orario, sala, insegnante, capienza massima, stagione).
+  classi (giorno, orario, sala, insegnante, capienza massima, stagione). Ogni
+  corso può essere mostrato sulla pagina pubblica "I corsi", con la tappa del
+  percorso, l'età consigliata e cosa sviluppa.
 - **Studenti** — l'elenco di tutti gli iscritti, con chi li segue (genitore o
   se stessi se maggiorenni).
 - **Iscrizioni** — le richieste in attesa di approvazione, la lista d'attesa
@@ -49,12 +51,34 @@ email da un Proprietario/Co-Proprietario, per sicurezza.
 - **Comunicazioni** — bacheca per avvisi mirati: a tutti, a un ruolo
   specifico, a un corso o a una singola classe. Ogni comunicazione arriva
   anche come notifica push e tiene traccia di chi l'ha letta.
+- **Sito pubblico** — i contenuti delle pagine visibili a tutti: foto e testi
+  de "La scuola", le voci dello "Speciale 28 anni" e (solo Proprietari) le
+  posizioni aperte di "Lavora con noi".
+- **Candidature** *(solo Proprietari/Webmaster)* — le candidature arrivate da
+  "Lavora con noi", con CV scaricabile; si eliminano insieme al CV quando non
+  servono più.
 - **Staff** — invito di nuovi account per segreteria, insegnanti,
   proprietari.
 - **Impostazioni** *(solo Proprietari/Webmaster)* — dati della scuola (nome,
   anno di fondazione, indirizzo, contatti) modificabili direttamente dal
   sito, e la gestione delle richieste di cancellazione dati (vedi Privacy
   più sotto).
+
+## Sito pubblico (per tutti, anche senza account)
+
+- **La scuola** — le aule, gli spazi, quello che facciamo e quello che abbiamo
+  fatto.
+- **I corsi** — il percorso a tappe (Primi passi, Fondamenta, Crescita, Alta
+  formazione) e cosa sviluppa ogni corso.
+- **Gli insegnanti** — il percorso di ognuno e il CV scaricabile, compilati
+  dall'insegnante stesso in "Il mio profilo".
+- **Speciale 28 anni** — ambizioni, concorsi, contest, competizioni e crescita
+  personale, raccontati con il loro contesto e non solo con i premi.
+- **Lavora con noi** — posizioni aperte (personale, insegnanti esterni,
+  masterclass) e modulo di candidatura con CV.
+- **Registrazione** — chiusa sul sito online: le famiglie le iscrive la
+  segreteria. Si riapre impostando `NEXT_PUBLIC_REGISTRAZIONI_APERTE=true`
+  su Vercel.
 
 ## Area famiglia (Allievo)
 
@@ -95,8 +119,5 @@ seconda via per gli avvisi più importanti.
 
 ## Cosa manca ancora
 
-- **Le migrazioni del database** per i ruoli, il modulo di iscrizione
-  manuale, le impostazioni della scuola e la privacy vanno ancora applicate
-  al progetto Supabase reale (si fa dal pannello Supabase, una alla volta).
-- **La messa online (deploy)** è volutamente rimandata a più avanti, su
-  richiesta esplicita.
+- **Database separato per lo sviluppo** — oggi sito online e prove in locale
+  usano lo stesso progetto Supabase.

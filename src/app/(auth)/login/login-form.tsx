@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { REGISTRAZIONI_APERTE } from "@/lib/registrazioni";
 import { login } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,9 +69,13 @@ export function LoginForm({ registrato }: { registrato: boolean }) {
             {pending ? "Accesso in corso..." : "Accedi"}
           </Button>
           <div className="flex w-full justify-between text-sm">
-            <Link href="/registrati" className="text-muted-foreground hover:text-foreground">
-              Crea un account
-            </Link>
+            {REGISTRAZIONI_APERTE ? (
+              <Link href="/registrati" className="text-muted-foreground hover:text-foreground">
+                Crea un account
+              </Link>
+            ) : (
+              <span />
+            )}
             <Link
               href="/recupera-password"
               className="text-muted-foreground hover:text-foreground"
