@@ -1,123 +1,72 @@
-# Open Dance — cos'è e cosa fa
+# Open Dance
 
-Open Dance è il sito/app della scuola che sostituisce telefonate, messaggi e
-fogli sparsi con un unico posto dove staff, insegnanti e famiglie trovano
-tutto: corsi, iscrizioni, pagamenti, presenze e comunicazioni.
+**Sito e applicazione gestionale per una scuola di danza.**
 
-È pensato soprattutto per essere usato da telefono (è installabile come
-un'app vera e propria, senza passare da App Store o Play Store), ma funziona
-anche da computer.
+Il progetto riunisce corsi, iscrizioni, presenze, pagamenti registrati dallo staff e comunicazioni. Gli accessi sono distinti per segreteria, insegnanti e famiglie.
 
-## I ruoli
+**Stato:** in sviluppo. L’anteprima online è ad accesso riservato; non è una demo pubblica aperta e non va presentata come prodotto commerciale ultimato.
 
-Ogni persona che accede vede solo quello che le serve:
+[Guida alle funzioni](./docs/guida-funzionale.md) · [Portfolio CPHR](https://cphr.it/) · [Profilo di Daniele](https://github.com/defnotafantom)
 
-- **Proprietario** e **Co-Proprietario** — accesso completo a tutto.
-- **Segretario/a** — gestisce corsi, iscrizioni, pagamenti, comunicazioni e
-  studenti, ma non lo staff né le impostazioni della scuola.
-- **Insegnante** — vede le proprie classi, fa l'appello, comunica con i suoi
-  allievi.
-- **Allievo** — l'account con cui una famiglia (o un allievo maggiorenne)
-  gestisce le proprie iscrizioni. Un solo accesso può gestire più figli.
-- **Webmaster** — un ruolo tecnico in più, per poter cambiare alcune
-  impostazioni del sito senza dover toccare il codice.
+## Contesto e contributo
 
-Gli account di staff e insegnanti non si creano da soli: vengono invitati via
-email da un Proprietario/Co-Proprietario, per sicurezza.
+Progetto di Daniele Bucca realizzato con l’assistenza di strumenti IA, a partire dalle esigenze di una scuola di danza. Il lavoro riguarda requisiti, interfacce e organizzazione delle funzioni; implementazione e verifiche sono assistite dall’IA.
 
-## Area staff (Proprietari, Segreteria, Insegnanti)
+## Tecnologie e struttura
 
-- **Panoramica** — un cruscotto con i numeri principali: studenti iscritti,
-  classi attive, iscrizioni in attesa, pagamenti in sospeso, grafici delle
-  nuove iscrizioni e degli incassi degli ultimi mesi, tasso di presenza per
-  classe.
-- **Corsi e classi** — creazione dei corsi (nome, categoria, livello) e delle
-  classi (giorno, orario, sala, insegnante, capienza massima, stagione). Ogni
-  corso può essere mostrato sulla pagina pubblica "I corsi", con la tappa del
-  percorso, l'età consigliata e cosa sviluppa.
-- **Studenti** — l'elenco di tutti gli iscritti, con chi li segue (genitore o
-  se stessi se maggiorenni).
-- **Iscrizioni** — le richieste in attesa di approvazione, la lista d'attesa
-  quando una classe è piena, e un **modulo per registrare a mano
-  un'iscrizione** raccolta fuori dal sito (di persona, al telefono): cerca o
-  crea l'account della famiglia, aggiunge l'iscritto e lo mette subito
-  attivo in una classe, senza passare dall'approvazione.
-- **Pagamenti** — registrazione di quanto dovuto/pagato per ogni iscritto,
-  scadenze, metodo di pagamento, stato (da pagare/parziale/pagato/scaduto).
-  Promemoria automatici (email + notifica) quando una scadenza si avvicina.
-  Esportazione in CSV per il commercialista.
-- **Eventi** — saggi e altri eventi della scuola, visibili anche a famiglie e
-  insegnanti.
-- **Comunicazioni** — bacheca per avvisi mirati: a tutti, a un ruolo
-  specifico, a un corso o a una singola classe. Ogni comunicazione arriva
-  anche come notifica push e tiene traccia di chi l'ha letta.
-- **Sito pubblico** — i contenuti delle pagine visibili a tutti: foto e testi
-  de "La scuola", le voci dello "Speciale 28 anni" e (solo Proprietari) le
-  posizioni aperte di "Lavora con noi".
-- **Candidature** *(solo Proprietari/Webmaster)* — le candidature arrivate da
-  "Lavora con noi", con CV scaricabile; si eliminano insieme al CV quando non
-  servono più.
-- **Staff** — invito di nuovi account per segreteria, insegnanti,
-  proprietari.
-- **Impostazioni** *(solo Proprietari/Webmaster)* — dati della scuola (nome,
-  anno di fondazione, indirizzo, contatti) modificabili direttamente dal
-  sito, e la gestione delle richieste di cancellazione dati (vedi Privacy
-  più sotto).
+| Ambito | Dove guardare |
+| --- | --- |
+| Pagine e interfacce · Next.js, React, TypeScript | [`src/app`](./src/app), [`src/components`](./src/components) |
+| Autenticazione e gestione dei ruoli · Supabase | [`src/lib/auth`](./src/lib/auth), [`src/proxy.ts`](./src/proxy.ts) |
+| Logica applicativa e validazione · Server Actions, Zod | [`src/lib`](./src/lib) |
+| Schema e politiche di accesso · PostgreSQL | [`supabase/migrations`](./supabase/migrations) |
+| Installazione PWA e notifiche · Serwist, Web Push | [`src/sw.ts`](./src/sw.ts), [`src/lib/push`](./src/lib/push) |
 
-## Sito pubblico (per tutti, anche senza account)
+## Funzioni presenti
 
-- **La scuola** — le aule, gli spazi, quello che facciamo e quello che abbiamo
-  fatto.
-- **I corsi** — il percorso a tappe (Primi passi, Fondamenta, Crescita, Alta
-  formazione) e cosa sviluppa ogni corso.
-- **Gli insegnanti** — il percorso di ognuno e il CV scaricabile, compilati
-  dall'insegnante stesso in "Il mio profilo".
-- **Speciale 28 anni** — ambizioni, concorsi, contest, competizioni e crescita
-  personale, raccontati con il loro contesto e non solo con i premi.
-- **Lavora con noi** — posizioni aperte (personale, insegnanti esterni,
-  masterclass) e modulo di candidatura con CV.
-- **Registrazione** — chiusa sul sito online: le famiglie le iscrive la
-  segreteria. Si riapre impostando `NEXT_PUBLIC_REGISTRAZIONI_APERTE=true`
-  su Vercel.
+- Pagine pubbliche della scuola, corsi e insegnanti.
+- Inviti allo staff, accessi per ruoli e gestione degli iscritti.
+- Iscrizioni, liste d’attesa, calendario e registrazione delle presenze.
+- Registrazione di importi e scadenze; nessun pagamento online viene promesso da questa descrizione.
+- Avvisi, notifiche, documenti e richieste relative ai dati personali.
 
-## Area famiglia (Allievo)
+La [guida funzionale](./docs/guida-funzionale.md) descrive le aree nel dettaglio. L’uso reale richiede il collaudo dei ruoli e dei servizi configurati, oltre alla validazione delle procedure della scuola.
 
-- **Home** — un riepilogo personale: quanti iscritti, quante lezioni nei
-  prossimi 7 giorni, quanto c'è da saldare, quante comunicazioni non lette.
-- **Iscritti** — aggiunta dei propri figli (o iscrizione di se stessi se
-  maggiorenni); un solo accesso gestisce tutta la famiglia.
-- **Orario** — l'orario settimanale dei corsi, con la possibilità di
-  richiedere l'iscrizione di un figlio a una classe (va in approvazione, o in
-  lista d'attesa se la classe è piena) e di **rinnovare con un tocco**
-  l'iscrizione alla stagione successiva dello stesso corso.
-- **Pagamenti** — consultazione in sola lettura di quanto dovuto/pagato e
-  delle scadenze.
-- **Presenze** — conferma anticipata "ci sarò/non ci sarò" per le lezioni dei
-  prossimi 14 giorni (aiuta l'insegnante a organizzarsi), più lo storico
-  delle presenze registrate a lezione.
-- **Documenti** — caricamento di documenti come il certificato medico, con
-  avviso quando sta per scadere.
-- **Eventi** e **Comunicazioni** — come sopra, dal punto di vista della
-  famiglia.
-- **Privacy** — scaricare una copia di tutti i propri dati, oppure chiedere
-  la cancellazione dell'account: lo staff la evade rimuovendo i dati
-  identificativi (nome, documenti, note mediche) e disabilitando l'accesso,
-  mantenendo solo lo storico di iscrizioni/pagamenti in forma anonima per
-  gli obblighi contabili della scuola.
+## Avvio in locale
 
-## Area insegnante
+Servono Node.js e un progetto Supabase dedicato allo sviluppo.
 
-- **Le mie classi** e **appello** — segna le presenze a lezione.
-- **Comunicazioni** — messaggi alla propria classe.
-- **Eventi** — consultazione.
+```bash
+npm ci
+cp .env.local.example .env.local
+```
 
-## Notifiche
+Configura le variabili Supabase del progetto di prova e `NEXT_PUBLIC_SITE_URL=http://localhost:3000`. Lo schema è versionato in `supabase/migrations`: applicalo al database di sviluppo con gli strumenti Supabase, mantenendo l’ordine delle migrazioni.
 
-Chi attiva le notifiche sul telefono riceve un avviso push per: nuove
-comunicazioni, promemoria di pagamento in scadenza. Le email arrivano come
-seconda via per gli avvisi più importanti.
+```bash
+npm run dev
+```
 
-## Cosa manca ancora
+Le chiavi con privilegi di amministrazione restano sul server. Per provare documenti, pagamenti e famiglie usa dati inventati e servizi email di test.
 
-- **Database separato per lo sviluppo** — oggi sito online e prove in locale
-  usano lo stesso progetto Supabase.
+## Controlli
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm audit
+```
+
+La compilazione e il controllo dei tipi non sostituiscono le prove di accesso tra ruoli diversi. Prima dell’uso operativo vanno verificati iscrizioni, presenze, comunicazioni, accesso ai documenti, esportazione e cancellazione dei dati.
+
+## Limiti attuali
+
+L’accesso all’anteprima è riservato. Email, notifiche push e processi programmati dipendono dalle configurazioni esterne. Lo sviluppo deve avere un database separato dall’ambiente usato dalla scuola.
+
+Il codice documenta un’applicazione in costruzione e non dichiara una conformità normativa o un collaudo completo su dati reali.
+
+## Pubblicazione
+
+I deploy automatici del ramo `master` sono sospesi mentre viene verificato l’ambiente operativo. Un aggiornamento del codice su GitHub non aggiorna da solo l’anteprima Vercel. La pipeline di qualità usa configurazioni di prova: non collauda un’istanza Supabase reale.
