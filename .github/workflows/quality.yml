@@ -1,0 +1,28 @@
+name: Quality
+on:
+  push:
+    branches: [master]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:59999
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: local-ci-placeholder
+      SUPABASE_SERVICE_ROLE_KEY: local-ci-placeholder
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3101
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build

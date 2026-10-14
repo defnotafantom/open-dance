@@ -4,5 +4,11 @@
       "path": "/api/cron/genera-lezioni",
       "schedule": "0 3 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/github-verifica": false,
+      "master": false
+    }
+  }
 }
